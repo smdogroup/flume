@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-from base_classes.state import State
+from smdo_framework.base_classes.state import State
 
 
 # Define the default warning format
