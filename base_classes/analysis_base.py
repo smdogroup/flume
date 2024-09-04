@@ -381,10 +381,27 @@ class AnalysisBase:  # FIXME: rename to component
 
         return param_values
 
+    def _set_data_type(self, mode):
+        """
+        FIXME:
+
+        TODO: come back and make it so setting the mode for complex works for all analysis objects
+        """
+
+        if mode == "real":
+            self.dtype = float
+        elif mode == "complex":
+            self.dtype = complex
+        else:
+            raise ValueError("Analysis mode must be either 'real' or 'complex'.")
+
     def _initialize_analysis(self, mode="real"):
         """
         Initializes the internal data for the analysis procedure contained within the object. Nominally, this simply sets an attribute called 'analyzed', which is a boolean that stores whether the analysis procedure has been performed. If other procedures are required for this function, the derived class should contain an instance of this method and then call super()._initialize_analysis() immediately before the return statement.
         """
+
+        # Set the data type based on the analysis mode
+        self._set_data_type(mode=mode)
 
         # Initialize the flag that specifies whether the analysis procedure has been performed
         self.analyzed = False
@@ -410,7 +427,7 @@ class AnalysisBase:  # FIXME: rename to component
 
             # Perform the analysis for each object in the stack
             if not analysis.analyzed:
-                analysis._analyze(mode=mode)
+                analysis._analyze()
 
         return
 
@@ -452,6 +469,10 @@ class AnalysisBase:  # FIXME: rename to component
             for i, analysis in enumerate(self.stack):
                 print(f"analysis {i} = {analysis.obj_name}")
 
+        # Make the stack for the object if it does not already exist (this may occur if the analysis class is not called as the top-level analysis)
+        if not hasattr(self, "stack"):
+            self.stack = self._make_stack()
+
         for analysis in self.stack[::-1]:
             analysis._initialize_adjoint()
 
@@ -488,7 +509,6 @@ class AnalysisBase:  # FIXME: rename to component
         # Initialize the seeds for the adjoint method
         self.seeds = {}
 
-        # QUESTION: is this a valid way to do this? Practically, whenever output seeds are set then all other derivative values should be zeroed out to perform the adjoint analysis for each separate computation; but is there a better way to do this?
         # Zero out the output derivative values for all objects in the analysis stack, which may exist from previous adjoint analyses
         if hasattr(self, "stack"):
             for analysis in self.stack:
