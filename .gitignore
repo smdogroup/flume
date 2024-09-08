@@ -1,2 +1,4 @@
 */__pycache__/
 __pycache__/
+.github/
+examples/pyoptsparse_test.py
