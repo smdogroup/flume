@@ -4,14 +4,22 @@ from base_classes.analysis_base import AnalysisBase, State
 
 class ProfileParasiticPower(AnalysisBase):
     """
-    FIXME:
-
-    THIS CLASS WILL JUST COMPUTE THE CONSTANT MODIFIERS FOR PROFILE AND PARASITIC POWER; DOES NOT HAVE ANY INFORMATION ABOUT FLIGHT SPEED, WHICH IS NEEDED TO COMPUTE POWER COEFFICIENTS; WILL BE PROVIDED TO MOMENTUJM THEORY SEGMENT, WHICH WILL THEN COMPUTE THE POWERS DIRECTLY (AFTER SOLVING FOR ALPHA WITH STEADY-LEVEL FLIGHT)
+    Analysis class that computes the profile and parasitic power terms noramlized by advance ratio (influence of flight speed handled by momentum theory segment).
     """
 
     def __init__(self, obj_name: str, **kwargs):
         """
-        FIXME:
+        Analysis class for computing profile and parasitic power terms normalized by their advance ratio contributions.
+
+        Parameters
+        ----------
+        obj_name : str
+            Name for the analysis object
+
+        Keyword Arguments
+        -----------------
+        R : float
+            Rotor radius (meters)
         """
 
         # Set the default parameters for the profile power analysis
@@ -64,7 +72,7 @@ class ProfileParasiticPower(AnalysisBase):
 
     def _analyze(self, mode="real"):
         """
-        FIXME:
+        Private analysis method for the object that computes all of the outputs with the provided input variables and parameters to the object.
         """
 
         if mode == "real":
@@ -104,7 +112,7 @@ class ProfileParasiticPower(AnalysisBase):
 
     def _analyze_adjoint(self):
         """
-        FIXME:
+        Private adjoint analysis method for the object that computes the derivative values for the input variables via the adjoint method.
         """
 
         # Assert that the adjoint has been initialized

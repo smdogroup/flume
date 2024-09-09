@@ -9,7 +9,7 @@ from typing import Optional
 
 class MomentumTheorySegment(AnalysisBase):
     """
-    FIXME:
+    Analysis class that computes numerous outputs that characterize a segment of a mission profile using momentum theory analysis techniques.
     """
 
     def __init__(
@@ -20,7 +20,37 @@ class MomentumTheorySegment(AnalysisBase):
         **kwargs,
     ):
         """
-        FIXME:
+        Analysis class for performing an analysis of a momentum theory segment.
+
+        Parameters
+        ----------
+        seg_name : str
+            Name for the momentum theory segment object
+        mode : str
+            Operational mode for the segment. Options are one of the following: ['hover', 'axial_climb', 'axial_descent', 'climb', 'descent', 'forward']. This controls the equations used in the analysis
+        sub_analysis : None or ProfielParasiticPower object
+            Optional argument that specifies whether the profile and parasitic power terms are computed from a sub-analysis
+
+        Keyword Arguments
+        -----------------
+        mode : str
+            Operational mode, inherited from the required input for the class
+        Omega : float
+            Rotational speed of the rotor blades (rad/s)
+        R : float
+            Rotor radius (m)
+        rho : float
+            Density of the atmosphere (kg/m**3)
+        weight : float
+            Weight of the rotorcraft (N)
+        kappa : float
+            Induced power factor for the momentum theory analysis
+        rc_type : str
+            Either 'single' or 'coaxial', which specifies whether the rotorcraft type is a traditional (single rotor disk) rotorcraft or a coaxial rotorcraft
+        kappa_int : float
+            Interference factor used for the coaxial rotor system
+        equilibrium : bool
+            Boolean value that dictates whether the forces of flight are in equilibrium for the rotorcraft (if True, rotor disk angle of attack is solved for directly)
         """
 
         # Store the sub_analysis depending on whether the argument is a class or None
@@ -118,7 +148,7 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _initialize_analysis(self, mode="real"):
         """
-        FIXME:
+        Initializes the internal data for the analysis procedure contained within the object. Also, sets the weight attribute, which is how much weight a single rotor disk carries, depending on the rc_type parameter.
         """
 
         # If the rotorcraft type is coaxial, set the weight attribute to be half the weight of the rotorcraft (assuming thrust-balanced rotors for the system); otherwise, the weight is unchanged since the single rotor disk must carry all the weight
@@ -134,9 +164,7 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _analyze(self, mode="real"):
         """
-        FIXME:
-
-        THIS ANALYSIS IS ALWAYS FOR AN ISOLATED ROTOR; MODIFICATIONS ARE MADE TO THE INDUCED POWER WHERE NECESSARY
+        Private analysis method for the object that computes all of the outputs with the provided input variables and parameters to the object. This analysis is always for an isolated rotor, regardless of rc_type. If the rotorcraft type is coaxial, then modifications are made, as necessary.
         """
 
         if mode == "real":
@@ -345,7 +373,7 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _analyze_adjoint(self):
         """
-        FIXME:
+        Private adjoint analysis method for the object that computes the derivative values for the input variables via the adjoint method.
         """
 
         # Assert that the adjoint has been initialized
@@ -496,7 +524,16 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _compute_hover_quantities(self):
         """
-        FIXME:
+        Comptues the hover quantities for the rotorcraft.
+
+        Returns
+        -------
+        C_T : float
+            Coefficient of thrust for the rotorcraft
+        lam_h : float
+            Inflow ratio in hover
+        v_h : float
+            Induced velocity in hover (m/s)
         """
 
         # Compute the coefficient of thrust, assuming lift = weight
@@ -520,7 +557,27 @@ class MomentumTheorySegment(AnalysisBase):
         self, lam0, mu_x, mu_y, alpha, C_T, epsilon=1e-12, max_iter=100
     ):
         """
-        FIXME:
+        Computes the inflow ratio for a rotorcraft using a Newton-Raphson procedure.
+
+        Parameters
+        ----------
+        lam0 : float
+            Initial guess for the inflow ratio
+        mu_x : float
+            Advance ratio in the horizontal direction (forward flight)
+        mu_y : float
+            Advance ratio in the vertical direction (climbing/descending flight)
+        alpha : float
+            Rotor disk angle of attack (rad)
+        epsilon : float
+            Tolerance for the Newton-Raphson solver, defaults to 1e-12
+        max_iter : int
+            Max number of iterations for the Newton-Raphson solver, defaults to 100 iterations
+
+        Returns
+        -------
+        lam : float
+            Converged value of the inflow ratio from solving the generalized inflow equation numerically
         """
 
         # Set the initial value for inflow to lam0
@@ -554,7 +611,25 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _eval_lam_func(self, lam, mu_x, mu_y, alpha, C_T):
         """
-        FIXME:
+        Evaluates the residual equation for the generalized inflow equation.
+
+        Parameters
+        ----------
+        lam : float
+            Current value for the inflow ratio
+        mu_x : float
+            Advance ratio in the horizontal direction (forward flight)
+        mu_y : float
+            Advance ratio in the vertical direction (climbing/descending flight)
+        alpha : float
+            Rotor disk angle of attack (rad)
+        C_T : float
+            Coefficient of thrust for the rotor disk
+
+        Returns
+        -------
+        f_lam : float
+            Value of the residual equation using the provided inputs
         """
 
         # Evaluate the inflow ratio function (forward flight without climb)
@@ -568,7 +643,21 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _eval_lam_deriv(self, lam, mu_x, C_T):
         """
-        FIXME:
+        Evaluates the derivative of the residual equation for the generalized inflow equation.
+
+        Parameters
+        ----------
+        lam : float
+            Current value for the inflow ratio
+        mu_x : float
+            Advance ratio in the horizontal direction (forward flight)
+        C_T : float
+            Coefficient of thrust for the rotor disk
+
+        Returns
+        -------
+        deriv_lam : float
+            Value of the derivative of the residual equation using the provided inputs
         """
 
         # Evaluate the derivative of the inflow ratio function
@@ -578,7 +667,19 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _eval_axial_climb_descent(self, v_c, v_h):
         """
-        FIXME:
+        Computes the induced velocity normalized by the induced velocity in hover for axial climb and descent. Value of v_c dictates which procedure is followed.
+
+        Parameters
+        ----------
+        v_c : float
+            Climb velocity for the rotorcraft (m/s)
+        v_h : float
+            Induced velocity in hover for the rotorcraft (m/s)
+
+        Returns
+        -------
+        vi_vh : float
+            Ratio of the induced velocity to the induced velocity in hover, where v_i is computed based on the value for v_c
         """
 
         # Check to make sure that the climb velocity is negative for axial descent
@@ -619,7 +720,11 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _equilibrium_check(self):
         """
-        FIXME:
+        Sets the value for the thrust attribute depending on the Boolean value for the equilibrium parameter.
+
+        Returns
+        -------
+        None, but internally sets the value for the thrust attribute
         """
 
         # Check to see if equilibrium conditions are specified
@@ -657,7 +762,14 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _compute_parasitic_profile_power(self):
         """
-        FIXME:
+        Computes the dimensional values of profile and parasitic power.
+
+        Returns
+        -------
+        P_0 : float
+            Dimensional value of the profile power for the rotorcraft (W)
+        P_p : float
+            Dimensional value of the parasitic power for the rotorcraft (W)
         """
 
         # Compute the profile power coefficient
@@ -691,7 +803,7 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _induced_propulsion_power_adj(self):
         """
-        FIXME:
+        Performs the adjoint implementation for the induced and propulsion power computations.
         """
 
         # If the rc_type is coaxial, multiply the bar values for P_cp and P_i by 2.0 and kappa_int
@@ -853,7 +965,7 @@ class MomentumTheorySegment(AnalysisBase):
 
     def _hover_quantities_adj(self):
         """
-        FIXME:
+        Performs the adjoint implementation for the hover quantity computations.
         """
 
         # Compute the contribution to lam_h from v_h
