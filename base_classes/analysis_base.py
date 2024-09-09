@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-from smdo_framework.base_classes.state import State
+from base_classes.state import State
 
 
 # Define the default warning format
@@ -12,7 +12,7 @@ def custom_formatwarning(msg, *args, **kwargs):
 warnings.formatwarning = custom_formatwarning
 
 
-class AnalysisBase:  # FIXME: rename to component
+class AnalysisBase:
     """
     This is a base class for all derived analysis classes that establishes a set of common methods. For the variables and outputs that are stored as attributes of the class, data is stored in dictionaries with key-value pairs structured as "variable/output name" : State object that describes the variable/output.
     """
@@ -180,7 +180,7 @@ class AnalysisBase:  # FIXME: rename to component
             # Raise an error if the
             else:
                 raise KeyError(
-                    f"Variable '{var}' is not an allowable variable for {self.__class__.__name__} object named '{self.obj_name}'."
+                    f"Variable '{var}' is not a valid variable for {self.__class__.__name__} object named '{self.obj_name}'."
                 )
 
             # Add the variable to an attribute that stores whether or not
@@ -191,7 +191,7 @@ class AnalysisBase:  # FIXME: rename to component
 
         return
 
-    def get_var_values(self, variables=["all"]) -> dict:
+    def get_var_values(self, variables=["all"], display_data=False) -> dict:
         """
         Gets the values for the variables specified in the variables input list.
 
@@ -204,6 +204,8 @@ class AnalysisBase:  # FIXME: rename to component
         -------
         var_values : dict
             A dictionary that contains key-value pairs for the desired variables based on the input to the function.
+        display_data : bool
+            Boolean value that dictates whether variable values should be displayed when this method is called. Default is False.
         """
 
         # Initialize the dictionary that stores the key-value pairs for the variables
@@ -227,11 +229,23 @@ class AnalysisBase:  # FIXME: rename to component
                         f"Variable '{var}' is not a valid variable for {self.__class__.__name__} object named '{self.obj_name}'. Valid variables are {[key for key in var_keys]}."
                     )
 
+        if display_data:
+            data_str = f"\n Variable values for object named '{self.obj_name}':"
+            print(data_str)
+            print("-" * len(data_str))
+            for var in var_values:
+                print(f"    {var}  = {var_values[var]}")
+
         return var_values
 
     def declare_design_vars(self, variables: list):
         """
-        FIXME:
+        Declare design variables for the analysis object. This could be all of the variables for the object or a subset based on the user input to the method.
+
+        Parameters
+        ----------
+        variables : list
+            A list of strings which correspond to the variables that are to be included as design variables for the analysis object. This list is stored internally as an attribute and specifies which variables are included in adjoint tests.
         """
 
         # Loop through the variables provided in the input and add to the design_vars list (also checking to make sure no extra/incorrect vars are provided)
@@ -287,7 +301,7 @@ class AnalysisBase:  # FIXME: rename to component
 
         return var_derivs
 
-    def get_var_metadata(self, variables: list = ["all"]) -> dict:
+    def get_var_metadata(self, variables: list = ["all"], display_info=False) -> dict:
         """
         Gets the metadata associated with the variables specified in the variables input list.
 
@@ -300,6 +314,8 @@ class AnalysisBase:  # FIXME: rename to component
         -------
         var_meta : dict
             A dictionary of dictionaries for the specified variables in the input. Each sub-dictionary contains key-value pairs for the following information: variable type, shape (if applicable), and description.
+        display_info : bool
+            Boolean value that dictates whether variable metadata should be displayed when this method is called. Default is False.
         """
 
         # Initialize the dictionary for the metadata for the variables
@@ -346,9 +362,17 @@ class AnalysisBase:  # FIXME: rename to component
                         f"Variable '{var}' is not a valid variable for {self.__class__.__name__} object named '{self.obj_name}'. Valid variables are {[key for key in var_keys]}."
                     )
 
+        if display_info:
+            for var in var_meta:
+                var_str = f"\n\n Variable '{var}' Information:"
+                print(var_str)
+                print("-" * len(var_str))
+                for key in var_meta[var]:
+                    print(f"    {key} : {var_meta[var][key]}")
+
         return var_meta
 
-    def get_parameter_values(self, params: list = ["all"]) -> dict:
+    def get_parameter_values(self, params: list = ["all"], display_data=False) -> dict:
         """
         Gets the values for the parameters specified in the parameters input list.
 
@@ -361,6 +385,8 @@ class AnalysisBase:  # FIXME: rename to component
         -------
         param_values : dict
             A dictionary that contains key-value pairs for the desired parameters based on the input to the function.
+        display_data : bool
+            Boolean value that dictates whether parameter values should be displayed when this method is called. Default is False.
         """
 
         # Initialize the dictionary that stores the key-value pairs for the parameters
@@ -379,11 +405,23 @@ class AnalysisBase:  # FIXME: rename to component
                         f"Parameter '{param}' is not a valid parameter for {self.__class__.__name__} object named '{self.obj_name}'. Valid parameters are {[param for param in param_keys]}."
                     )
 
+        if display_data:
+            data_str = f"\n Parameter values for object named '{self.obj_name}':"
+            print(data_str)
+            print("-" * len(data_str))
+            for param in param_values:
+                print(f"    {param}  = {param_values[param]}")
+
         return param_values
 
     def _set_data_type(self, mode):
         """
-        FIXME:
+        Declares the mode that should be used when performing the analysis procedure, i.e. real or complex.
+
+        Parameters
+        ----------
+        mode : str
+            Either 'real' or 'complex', which then sets an attribute for dtype to be float or complex. This is needed when setting data type for numpy arrays during analysis procedures.
 
         TODO: come back and make it so setting the mode for complex works for all analysis objects
         """
@@ -461,7 +499,7 @@ class AnalysisBase:  # FIXME: rename to component
 
     def analyze_adjoint(self, debug_print=False):
         """
-        FIXME:
+        Performs the adjoint analysis for the object and propagates any computations back through other sub-analyses included in the stack. Internally, this is done by reversing through the stack performing the adjoint analysis for each individual object.
         """
 
         if debug_print:
@@ -639,7 +677,7 @@ class AnalysisBase:  # FIXME: rename to component
             # Update the attribute that states whether or not the connections map has been made
             self.connected = True
 
-    def get_output_values(self, outputs: list = ["all"]) -> dict:
+    def get_output_values(self, outputs: list = ["all"], display_data=False) -> dict:
         """
         Gets the values for the specified outputs.
 
@@ -652,6 +690,8 @@ class AnalysisBase:  # FIXME: rename to component
         -------
         output_values : dict
             A dictionary that contains key-value pairs for the desired outputs based on the input to the function.
+        display_data : bool
+            Boolean value that dictates whether output values should be displayed when this method is called. Default is False.
         """
 
         # Verify that the analysis has been performed
@@ -677,9 +717,16 @@ class AnalysisBase:  # FIXME: rename to component
                         f"Output '{out}' is not a valid output for a {self.__class__.__name__} object named '{self.obj_name}' object. Valid outputs are {[out for out in out_keys]}."
                     )
 
+        if display_data:
+            data_str = f"\n Output values for object named '{self.obj_name}':"
+            print(data_str)
+            print("-" * len(data_str))
+            for out in output_values:
+                print(f"    {out}  = {output_values[out]}")
+
         return output_values
 
-    def get_output_metadata(self, outputs: list = ["all"]) -> dict:
+    def get_output_metadata(self, outputs: list = ["all"], display_info=False) -> dict:
         """
         Gets the metadata associated with the outputs specified in the outputs list.
 
@@ -692,7 +739,16 @@ class AnalysisBase:  # FIXME: rename to component
         -------
         out_meta : dict
             A dictionary of dictionaries for the specified outputs. Each sub-dictionary contains key-value pairs for the following information: variable type, shape (if applicable), and description.
+        display_info : bool
+            Boolean value that dictates whether variable metadata should be displayed when this method is called. Default is False.
         """
+
+        # Verify that the analysis has been performed
+        if not hasattr(self, "analyzed") or not self.analyzed:
+            raise ValueError(
+                f"The {self.__class__.__name__} object named '{self.obj_name}' has not been analyzed yet, so there are no outputs to return. This method should not be called until 'analyze' is called."
+            )
+
         # Initialize a dictionary for the metadata of the outputs
         out_meta = {}
 
@@ -735,6 +791,14 @@ class AnalysisBase:  # FIXME: rename to component
                         f"Output {out} is not a valid output for {self.__class__.__name__} object named '{self.obj_name}'. Valid outputs are {[key for key in out_keys]}."
                     )
 
+        if display_info:
+            for out in out_meta:
+                out_str = f"\n\n Output '{out}' Information:"
+                print(out_str)
+                print("-" * len(out_str))
+                for key in out_meta[out]:
+                    print(f"    {key} : {out_meta[out][key]}")
+
         return out_meta
 
     def get_global_name(self, local_name: str) -> str:
@@ -769,9 +833,19 @@ class AnalysisBase:  # FIXME: rename to component
 
         return global_name
 
-    def _test_isolated_adjoint(self, debug_print=False, defined_vars={}):
+    def test_isolated_adjoint(self, debug_print=False, defined_vars={}):
         """
-        FIXME:
+        Tests the adjoint implementation for an analysis object (ignores any sub-analyses for the isolated case). Currently, only the complex-step method is implemented for this test, so calculations must be complex-safe.
+
+        Parameters
+        ----------
+
+        defined_vars : dictionary
+            Dictionary that specifies whether any variables that have defined values for the adjoint test. This is nominally empty, but is sometimes necessary for variables that have strict bounds.
+
+        Returns
+        -------
+        None, but displays results of adjoint analysis test
         """
 
         # Set random variable values for all variables
@@ -924,7 +998,7 @@ class AnalysisBase:  # FIXME: rename to component
 
         test_case = f"ISOLATED adjoint test results for {self.__class__.__name__} object named '{self.obj_name}':"
 
-        print("-" * len(test_case))
+        print("\n", "-" * len(test_case))
         print(test_case)
         print("-" * len(test_case))
 
@@ -938,9 +1012,16 @@ class AnalysisBase:  # FIXME: rename to component
 
         return
 
-    def _test_combined_adjoint(self, debug_print=False, method="cs"):
+    def test_combined_adjoint(self, debug_print=False, method="cs"):
         """
-        FIXME: docstring and code documentation
+        Tests the adjoint implementation for an analysis object and accounts for any sub-analyses within the stack.
+
+        Parameters
+        ----------
+        debug_print : bool
+            Boolean value that specifies whether debug print statements should be displayed
+        method : str
+            Either 'cs' or 'fd', which specifies that the method to check against the adjoint implementation is complex-step or finite-difference, respectively
         """
 
         # Perform a preliminary analysis to assemble the stack and form the connection maps
