@@ -1,4 +1,4 @@
-from base_classes.analysis_base import Analysis
+from base_classes.analysis import Analysis
 from base_classes.state import State
 import numpy as np
 
