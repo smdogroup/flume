@@ -1,5 +1,5 @@
 import numpy as np
-from base_classes.analysis_base import AnalysisBase
+from base_classes.analysis_base import Analysis
 from examples.momentum_theory.momentum_model import MomentumTheorySegment
 from examples.momentum_theory.profile_parasitic_power import ProfileParasiticPower
 
@@ -36,6 +36,7 @@ if __name__ == "__main__":
         # )
 
         # To display the variable information, call the metadata function (default returns info for all variables, but you can also specify a subset). Metadata is assigned to a dictionary, but can also be displayed by setting display_info to True
+        # TODO: add function to display meta data dictionary
         var_meta = hover.get_var_metadata(display_info=True)
 
         # To extract and display variable/parameter values, use the get_var/parameter_values method
@@ -53,7 +54,7 @@ if __name__ == "__main__":
         hover.set_var_values(variables={"alpha": alpha, "V_inf": V_inf, "m_P0": m_P0})
 
         # NOTE: comment out to avoid error
-        # # Output metadata/values can be extracted AFTER performing the analysis
+        # Output metadata/values can be extracted AFTER performing the analysis
         # hover.get_output_metadata()
 
         # To analyze the system, call the anlyze method

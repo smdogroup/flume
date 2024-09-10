@@ -1,4 +1,4 @@
-from base_classes.analysis_base import AnalysisBase
+from base_classes.analysis_base import Analysis
 from base_classes.state import State
 from examples.hohmann_transfer.vcirc import VCircAnalysis
 from examples.hohmann_transfer.transfer_orbit import TransferOrbitAnalysis

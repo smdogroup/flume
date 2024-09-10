@@ -1,8 +1,8 @@
 import numpy as np
-from base_classes.analysis_base import AnalysisBase, State
+from base_classes.analysis_base import Analysis, State
 
 
-class ProfileParasiticPower(AnalysisBase):
+class ProfileParasiticPower(Analysis):
     """
     Analysis class that computes the profile and parasitic power terms noramlized by advance ratio (influence of flight speed handled by momentum theory segment).
     """

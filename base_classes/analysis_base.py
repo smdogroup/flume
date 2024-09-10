@@ -12,7 +12,7 @@ def custom_formatwarning(msg, *args, **kwargs):
 warnings.formatwarning = custom_formatwarning
 
 
-class AnalysisBase:
+class Analysis:
     """
     This is a base class for all derived analysis classes that establishes a set of common methods. For the variables and outputs that are stored as attributes of the class, data is stored in dictionaries with key-value pairs structured as "variable/output name" : State object that describes the variable/output.
     """

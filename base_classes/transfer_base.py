@@ -3,7 +3,7 @@ import warnings
 
 
 # TODO: need to clarify the name here
-class TransferBase:
+class Transfer:
     """
     FIXME:
     """

@@ -1,5 +1,5 @@
 import numpy as np
-from base_classes.analysis_base import AnalysisBase, State
+from base_classes.analysis_base import Analysis, State
 import matplotlib.pyplot as plt
 import niceplots
 import json
@@ -7,7 +7,7 @@ from examples.momentum_theory.profile_parasitic_power import ProfileParasiticPow
 from typing import Optional
 
 
-class MomentumTheorySegment(AnalysisBase):
+class MomentumTheorySegment(Analysis):
     """
     Analysis class that computes numerous outputs that characterize a segment of a mission profile using momentum theory analysis techniques.
     """

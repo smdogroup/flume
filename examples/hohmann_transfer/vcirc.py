@@ -1,10 +1,10 @@
 # from base_classes.analysis_base import AnalysisBase
-from base_classes.analysis_base import AnalysisBase
+from base_classes.analysis_base import Analysis
 from base_classes.state import State
 import numpy as np
 
 
-class VCircAnalysis(AnalysisBase):
+class VCircAnalysis(Analysis):
     """
     Analysis class that computes the velcity associated with the circular orbit defined by the input radius and graviational parameter.
     """

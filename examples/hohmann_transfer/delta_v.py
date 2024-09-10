@@ -1,9 +1,9 @@
-from base_classes.analysis_base import AnalysisBase
+from base_classes.analysis_base import Analysis
 from base_classes.state import State
 import numpy as np
 
 
-class DeltaVAnalysis(AnalysisBase):
+class DeltaVAnalysis(Analysis):
     """
     Analysis class that computes the change in velocity required to perform a maneuver given the magnitudes of the velocities before and after the manuever and the inclination change between the orbits.
     """

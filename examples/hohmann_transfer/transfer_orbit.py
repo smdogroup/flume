@@ -1,9 +1,9 @@
-from base_classes.analysis_base import AnalysisBase
+from base_classes.analysis_base import Analysis
 from base_classes.state import State
 import numpy as np
 
 
-class TransferOrbitAnalysis(AnalysisBase):
+class TransferOrbitAnalysis(Analysis):
     """
     Analysis class that computes the velocity magnitudes at periapsis and apoapsis of an orbit for a given transfer orbit maneuver.
     """
