@@ -836,7 +836,7 @@ class Analysis:
 
         return global_name
 
-    def test_isolated_adjoint(self, debug_print=False, method="cs", defined_vars={}):
+    def test_isolated_adjoint(self, print_res = True, debug_print=False, method="cs", defined_vars={}):
         """
         Tests the adjoint implementation for an analysis object (ignores any sub-analyses for the isolated case). Currently, only the complex-step method is implemented for this test, so calculations must be complex-safe.
 
@@ -975,9 +975,9 @@ class Analysis:
                         def_var_values[var] + 1.0j * dh * perts["pert_" + var]
                     )
 
-                    print(pert_var_values[var])
                 elif method == 'fd':
 
+                    # This logic corrects the required type for float inputs using the item() method (otherwise they are converted to numpy arrays when the perturation is added)
                     if isinstance(def_var_values[var], float):
                         pert_var_values[var] = def_var_values[var] + dh * perts["pert_" + var].item()
                     else:
@@ -1038,32 +1038,33 @@ class Analysis:
         elif method == "fd":
             err = (ans_tot - fd) / fd
 
-        test_case = f"ISOLATED adjoint test results for {self.__class__.__name__} object named '{self.obj_name}':"
+        if print_res:
+            test_case = f"ISOLATED adjoint test results for {self.__class__.__name__} object named '{self.obj_name}':"
 
-        print("\n", "-" * len(test_case))
-        print(test_case)
-        print("-" * len(test_case))
-
-        if method == "cs":
-            print("\n %25s  %25s  %25s" % ("Answer", "Complex-step", "Rel Error"))
-            print("%25.15e  %25.15e  %25.15e" % (ans_tot, cs, err))
-
-            ratio = ans_tot / cs
-            print("\n ratio (ans/cs): ", ratio)
-            print("\n 1/ratio (cs/ans): ", 1 / ratio)
+            print("\n", "-" * len(test_case))
+            print(test_case)
             print("-" * len(test_case))
-        elif method == "fd":
-            print("\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error"))
-            print("%25.15e  %25.15e  %25.15e" % (ans_tot, fd, err))
 
-            ratio = ans_tot / fd
-            print("\n ratio (ans/fd): ", ratio)
-            print("\n 1/ratio (fd/ans): ", 1 / ratio)
-            print("-" * len(test_case))
+            if method == "cs":
+                print("\n %25s  %25s  %25s" % ("Answer", "Complex-step", "Rel Error"))
+                print("%25.15e  %25.15e  %25.15e" % (ans_tot, cs, err))
+
+                ratio = ans_tot / cs
+                print("\n ratio (ans/cs): ", ratio)
+                print("\n 1/ratio (cs/ans): ", 1 / ratio)
+                print("-" * len(test_case))
+            elif method == "fd":
+                print("\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error"))
+                print("%25.15e  %25.15e  %25.15e" % (ans_tot, fd, err))
+
+                ratio = ans_tot / fd
+                print("\n ratio (ans/fd): ", ratio)
+                print("\n 1/ratio (fd/ans): ", 1 / ratio)
+                print("-" * len(test_case))
 
         return err
 
-    def test_combined_adjoint(self, debug_print=False, method="cs", defined_vars={}):
+    def test_combined_adjoint(self, print_res = True, debug_print=False, method="cs", defined_vars={}):
         """
         Tests the adjoint implementation for an analysis object and accounts for any sub-analyses within the stack.
 
@@ -1328,26 +1329,27 @@ class Analysis:
 
         test_case = f"\n COMBINED adjoint test results for {self.__class__.__name__} object named {self.obj_name}:"
 
-        print("\n", "-" * len(test_case))
-        print(test_case)
-        print("-" * len(test_case))
-
-        if method == "cs":
-            print("\n %25s  %25s  %25s" % ("Answer", "Complex-step", "Rel Error"))
-            print("%25.15e  %25.15e  %25.15e" % (ans_tot, cs, err))
-
-            ratio = ans_tot / cs
-            print("\n ratio (ans/cs): ", ratio)
-            print("\n 1/ratio (cs/ans): ", 1 / ratio)
+        if print_res:
+            print("\n", "-" * len(test_case))
+            print(test_case)
             print("-" * len(test_case))
-        elif method == "fd":
-            print("\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error"))
-            print("%25.15e  %25.15e  %25.15e" % (ans_tot, fd, err))
 
-            ratio = ans_tot / fd
-            print("\n ratio (ans/fd): ", ratio)
-            print("\n 1/ratio (fd/ans): ", 1 / ratio)
-            print("-" * len(test_case))
+            if method == "cs":
+                print("\n %25s  %25s  %25s" % ("Answer", "Complex-step", "Rel Error"))
+                print("%25.15e  %25.15e  %25.15e" % (ans_tot, cs, err))
+
+                ratio = ans_tot / cs
+                print("\n ratio (ans/cs): ", ratio)
+                print("\n 1/ratio (cs/ans): ", 1 / ratio)
+                print("-" * len(test_case))
+            elif method == "fd":
+                print("\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error"))
+                print("%25.15e  %25.15e  %25.15e" % (ans_tot, fd, err))
+
+                ratio = ans_tot / fd
+                print("\n ratio (ans/fd): ", ratio)
+                print("\n 1/ratio (fd/ans): ", 1 / ratio)
+                print("-" * len(test_case))
 
         return err
 
