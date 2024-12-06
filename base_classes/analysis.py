@@ -836,8 +836,7 @@ class Analysis:
 
         return global_name
 
-    # TODO: add method here for cs/fd
-    def test_isolated_adjoint(self, debug_print=False, defined_vars={}):
+    def test_isolated_adjoint(self, debug_print=False, method="cs", defined_vars={}):
         """
         Tests the adjoint implementation for an analysis object (ignores any sub-analyses for the isolated case). Currently, only the complex-step method is implemented for this test, so calculations must be complex-safe.
 
@@ -893,9 +892,9 @@ class Analysis:
 
         # Analyze the system
         self._analyze()
+        outs0 = self.get_output_values()
 
         if debug_print:
-            outs0 = self.get_output_values()
             print("ORIGINAL OUTPUT VALUES: \n")
             for out in outs0:
                 print(out, ":", outs0[out])
@@ -952,19 +951,37 @@ class Analysis:
             print("\n OUTPUT SEED VALUES (AFTER ADJOINT ANALYSIS):")
             print(out_seeds)
 
-        # Set the perturbed design variable values
-        dh = 1e-30
+        # Set the step size based on the method used for the derivative check
+        if method == "cs":
+            dh = 1e-30
+            mode = "complex"
+        elif method == "fd":
+            dh = 1e-6
+            mode = "real"
+        else:
+            raise ValueError("Method must be 'fd' or 'cs'.")
 
+        # Set the perturbed design variable values
         pert_var_values = {}
         if debug_print:
             print("\n PERTURBED VARIABLE VALUES:")
         for var in self.variables:
 
             if var in self.design_vars_list:
-                # Perturb the design variable by a small amount in the imaginary plane in the previously determined random direction
-                pert_var_values[var] = (
-                    def_var_values[var] + 1.0j * dh * perts["pert_" + var]
-                )
+
+                if method == "cs":
+                    # Perturb the design variable by a small amount in the imaginary plane in the previously determined random direction
+                    pert_var_values[var] = (
+                        def_var_values[var] + 1.0j * dh * perts["pert_" + var]
+                    )
+
+                    print(pert_var_values[var])
+                elif method == 'fd':
+
+                    if isinstance(def_var_values[var], float):
+                        pert_var_values[var] = def_var_values[var] + dh * perts["pert_" + var].item()
+                    else:
+                        pert_var_values[var] = def_var_values[var] + dh * perts["pert_" + var]
 
                 if debug_print:
                     print(f"    \n {var} value: ", pert_var_values[var])
@@ -974,7 +991,7 @@ class Analysis:
         self.set_var_values(pert_var_values)
 
         # Compute the outputs using the perturbed values
-        self._initialize_analysis()
+        self._initialize_analysis(mode=mode)
 
         self._analyze()
 
@@ -986,24 +1003,40 @@ class Analysis:
             for out in outs:
                 print(out, ":", outs[out])
 
-        # Compute the derivative via complex-step
+        # Compute the derivative numerically
         cs = 0.0
+        fd = 0.0
 
         for out in outs:
 
-            # Compute the complex-step contribution value for the current output
-            cs_contr = np.sum(out_seeds[out + "b"] * np.imag(outs[out]) / dh)
+            if method == "cs":
+                # Compute the complex-step contribution value for the current output
+                cs_contr = np.sum(out_derivs[out] * np.imag(outs[out]) / dh)
 
-            # Add the contribution to the total derivative check using complex-step
-            cs += cs_contr
+                # Add the contribution to the total derivative check using complex-step
+                cs += cs_contr
 
-            if debug_print:
-                print(
-                    f"\n    Added contribution for output {out} to cs with a contribution of {cs_contr}."
-                )
+                if debug_print:
+                    print(
+                        f"\n    Added contribution for output {out} to cs with a contribution of {cs_contr}."
+                    )
+            elif method == "fd":
+                # Compute the finite-difference contribution value for the current output
+                fd_contr = np.sum(out_derivs[out] * (outs[out] - outs0[out]) / dh)
+
+                # Add the contribution to the total derivative check using complex-step
+                fd += fd_contr
+
+                if debug_print:
+                    print(
+                        f"\n    Added contribution for output {out} to fd with a contribution of {fd_contr}."
+                    )
 
         # Compute the relative error and display test results
-        err = (ans_tot - cs) / cs
+        if method == "cs":
+            err = (ans_tot - cs) / cs
+        elif method == "fd":
+            err = (ans_tot - fd) / fd
 
         test_case = f"ISOLATED adjoint test results for {self.__class__.__name__} object named '{self.obj_name}':"
 
@@ -1011,13 +1044,22 @@ class Analysis:
         print(test_case)
         print("-" * len(test_case))
 
-        print("\n %25s  %25s  %25s" % ("Answer", "Complex-step", "Rel Error"))
-        print("%25.15e  %25.15e  %25.15e" % (ans_tot, cs, err))
+        if method == "cs":
+            print("\n %25s  %25s  %25s" % ("Answer", "Complex-step", "Rel Error"))
+            print("%25.15e  %25.15e  %25.15e" % (ans_tot, cs, err))
 
-        ratio = ans_tot / cs
-        print("\n ratio (ans/cs): ", ratio)
-        print("\n 1/ratio (cs/ans): ", 1 / ratio)
-        print("-" * len(test_case))
+            ratio = ans_tot / cs
+            print("\n ratio (ans/cs): ", ratio)
+            print("\n 1/ratio (cs/ans): ", 1 / ratio)
+            print("-" * len(test_case))
+        elif method == "fd":
+            print("\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error"))
+            print("%25.15e  %25.15e  %25.15e" % (ans_tot, fd, err))
+
+            ratio = ans_tot / fd
+            print("\n ratio (ans/fd): ", ratio)
+            print("\n 1/ratio (fd/ans): ", 1 / ratio)
+            print("-" * len(test_case))
 
         return err
 
@@ -1120,7 +1162,7 @@ class Analysis:
         # Initialize and perform the analysis
         self.analyze(mode="real")
 
-        # Extract the perturbed output values
+        # Extract the original output values
         outs_orig = self.get_output_values()
 
         if debug_print:
@@ -1248,7 +1290,7 @@ class Analysis:
             for out in outs:
                 print(out, ":", outs[out])
 
-        # Compute the derivative via complex-step
+        # Compute the derivative numerically
         cs = 0.0
         fd = 0.0
         if debug_print:
