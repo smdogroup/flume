@@ -2,3 +2,4 @@
 __pycache__/
 .github/
 examples/pyoptsparse_test.py
+venv/
