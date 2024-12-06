@@ -817,7 +817,9 @@ class Analysis:
         """
 
         # This check allows for variable/parameter global names to be accessed before the analyze method is called, but it will prevent the user from accessing any (potential) output names
-        if (not self.analyzed and not (local_name in self.parameters or local_name in self.variables)):
+        if not self.analyzed and not (
+            local_name in self.parameters or local_name in self.variables
+        ):
             raise ValueError(
                 f"The {self.__class__.__name__} object named '{self.obj_name}' has not been analyzed yet, so the global names of outputs cannot be accessed. If you want to get the global name of an output, make sure 'analyze' has been called first."
             )
@@ -836,7 +838,9 @@ class Analysis:
 
         return global_name
 
-    def test_isolated_adjoint(self, print_res = True, debug_print=False, method="cs", defined_vars={}):
+    def test_isolated_adjoint(
+        self, print_res=True, debug_print=False, method="cs", defined_vars={}
+    ):
         """
         Tests the adjoint implementation for an analysis object (ignores any sub-analyses for the isolated case). Currently, only the complex-step method is implemented for this test, so calculations must be complex-safe.
 
@@ -888,7 +892,9 @@ class Analysis:
         # Check to make sure that the design variables list is not empty
         num_dvs = len(self.design_vars_list)
         if num_dvs == 0:
-            raise RuntimeError("The number of declared design variables is zero, which is invalid for performing the adjoint test.")
+            raise RuntimeError(
+                "The number of declared design variables is zero, which is invalid for performing the adjoint test."
+            )
 
         # Analyze the system
         self._analyze()
@@ -975,13 +981,17 @@ class Analysis:
                         def_var_values[var] + 1.0j * dh * perts["pert_" + var]
                     )
 
-                elif method == 'fd':
+                elif method == "fd":
 
                     # This logic corrects the required type for float inputs using the item() method (otherwise they are converted to numpy arrays when the perturation is added)
                     if isinstance(def_var_values[var], float):
-                        pert_var_values[var] = def_var_values[var] + dh * perts["pert_" + var].item()
+                        pert_var_values[var] = (
+                            def_var_values[var] + dh * perts["pert_" + var].item()
+                        )
                     else:
-                        pert_var_values[var] = def_var_values[var] + dh * perts["pert_" + var]
+                        pert_var_values[var] = (
+                            def_var_values[var] + dh * perts["pert_" + var]
+                        )
 
                 if debug_print:
                     print(f"    \n {var} value: ", pert_var_values[var])
@@ -1054,7 +1064,9 @@ class Analysis:
                 print("\n 1/ratio (cs/ans): ", 1 / ratio)
                 print("-" * len(test_case))
             elif method == "fd":
-                print("\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error"))
+                print(
+                    "\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error")
+                )
                 print("%25.15e  %25.15e  %25.15e" % (ans_tot, fd, err))
 
                 ratio = ans_tot / fd
@@ -1064,7 +1076,9 @@ class Analysis:
 
         return err
 
-    def test_combined_adjoint(self, print_res = True, debug_print=False, method="cs", defined_vars={}):
+    def test_combined_adjoint(
+        self, print_res=True, debug_print=False, method="cs", defined_vars={}
+    ):
         """
         Tests the adjoint implementation for an analysis object and accounts for any sub-analyses within the stack.
 
@@ -1075,10 +1089,10 @@ class Analysis:
         method : str
             Either 'cs' or 'fd', which specifies that the method to check against the adjoint implementation is complex-step or finite-difference, respectively
         defined_vars : dictionary
-            A dictionary where the keys correspond to the global variable names and the values are the numeric values that the variables should have. For example, if the user wants to set a variable 'x' for an analysis object 'analysis' to be value 1.0, defined_vars should be given as defined_vars = {'analysis.x': 1.0}. 
+            A dictionary where the keys correspond to the global variable names and the values are the numeric values that the variables should have. For example, if the user wants to set a variable 'x' for an analysis object 'analysis' to be value 1.0, defined_vars should be given as defined_vars = {'analysis.x': 1.0}.
         """
 
-        # 
+        #
 
         # Perform a preliminary analysis to assemble the stack and form the connection maps
         self.analyze()
@@ -1089,7 +1103,9 @@ class Analysis:
             num_dvs += len(obj.design_vars_list)
 
         if num_dvs == 0:
-            raise RuntimeError("The number of declared design variables is zero, which is invalid for performing the adjoint test.")
+            raise RuntimeError(
+                "The number of declared design variables is zero, which is invalid for performing the adjoint test."
+            )
 
         # If necessary, display the connections map information for the objects in the system
         if debug_print:
@@ -1343,7 +1359,9 @@ class Analysis:
                 print("\n 1/ratio (cs/ans): ", 1 / ratio)
                 print("-" * len(test_case))
             elif method == "fd":
-                print("\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error"))
+                print(
+                    "\n %25s  %25s  %25s" % ("Answer", "Finite-Difference", "Rel Error")
+                )
                 print("%25.15e  %25.15e  %25.15e" % (ans_tot, fd, err))
 
                 ratio = ans_tot / fd
@@ -1352,246 +1370,3 @@ class Analysis:
                 print("-" * len(test_case))
 
         return err
-
-
-# class AnalysisBase:
-#     def __init__(self, name, **kwargs):
-
-#         self.name = name  # Unqiue class name
-
-#         # Record arguments from the initialization
-#         self._log = {}
-#         self._log["init_args"] = {}
-#         for arg in kwargs:
-#             self._log["init_args"][arg] = kwargs[arg]
-
-#     def get_descript(self, inputs, outputs):
-#         """
-#         Get a dictionary of all the input and output names and their shapes. The
-#         shapes define the size of the input/output data. Either real or complex types
-#         are allowed.
-
-#         Parameters
-#         ----------
-#         inputs : dict
-#             Dictionary of input shapes indexed by the keyword name.
-#         outputs : dict
-#             Dictionary of output shapes indexed by the keyword name.
-
-#         Example
-#         -------
-#         nnodes = 931
-#         nf = NodeFilter(conn)
-#         inputs, outputs = nf.get_descript()
-#         inputs = {"x" : Obj(shape, descipt)}
-#         outputs = {"rho" : Obj(shape, descipt)}
-#         """
-
-#         self.fltr.get_descipt(inputs, outputs)
-
-#         class DescriptObj:
-#             def __init__(self, source, shape, descript):
-#                 self.source = source
-#                 self.shape = shape
-#                 self.descript = descript
-
-#         self.x_name = f"{self.name}.x"
-#         self.rho_xname = f"{self.name}.rho"
-
-#         if not self.x_name in inputs:
-#             shape = self.nnodes
-#             inputs[self.x_name] = DescriptObj(
-#                 self, shape, "Nodal design variable vector"
-#             )
-#         else:
-#             if inputs[self.x_name].source != self:
-#                 raise ValueError("x already in inputs")
-
-#         if not "rho" in outputs:
-#             shape = self.nnodes
-#             outputs["rho"] = DescriptObj(self, shape, "Filtered design density vector")
-#         else:
-#             if outputs["rho"].source != self:
-#                 raise ValueError("rho already in outputs")
-
-#     def initialize_analysis(self):
-#         """
-#         Initialize internal data for the underlying analysis.
-#         """
-
-#         self.analyzed = False
-
-#         return
-
-#     def set_inputs(self, inputs):
-#         """
-#         Parameters
-#         ----------
-#         inputs : dict
-#             Dictionary of input parameters to set. This can be a partial specification of
-#             the inputs.
-#         """
-
-#         self.fltr.set_inputs(inputs)
-
-#         if "x" in inputs:
-#             self.x[:] = inputs["x"]
-
-#     def _make_stack(self):
-#         stack = []
-#         for sub_analysis in self.sub_analyses:
-#             stack.extend(sub_analysis._make_stack())
-#         stack.append(self)
-#         return stack
-
-#     def analyze(self):
-#         """
-#         Perform the analysis and any sub analyses needed
-#         """
-#         self.stack = self._make_stack()
-
-#         for analysis in self.stack[::-1]:
-#             analysis._initialize_analysis()
-
-#         for analysis in self.stack:
-#             analysis._analyze()
-
-#         # connect call
-
-#         return
-
-#     def _analyze(self, stack):
-
-#         if not self.analyzed:
-#             # Solve the eigenvalue problem
-
-#             self.analyzed = True
-#             stack.append(self)
-
-#     def get_output(self, key):
-#         """
-#         Return the output associated with name from any level. Return None if the name
-#         does not correspond to a defined output.
-#         """
-
-#         if key is self.rho_name:
-#             return self.rho
-#         else:
-#             return self.fltr.get_output(key)
-
-#     def initialize_adjoint(self):
-#         """
-#         Initialize internal data for the underlying adjoint analysis
-#         """
-
-#         if not self.adjoint_initialized:
-#             # Zero out derivative seeds...
-#             self.seeds = {self.rho_name: None}
-
-#             self.adjoint_initialized = True
-
-#     def add_output_seed(self, key, seed):
-#         """
-#         Parameters
-#         ----------
-#         adjoint : dict
-#             Dictionary of the inputs - same size/dimensions of the inputs. This can be
-#             a partial specification of the inputs.
-#         """
-
-#         if name is self.rho_name:
-#             self.seeds[name] = self.rho_name
-
-#     def analyze_adjoint(self):
-#         """
-#         Compute the derivatives
-#         """
-
-#         while len(self.stack) > 0:
-#             obj = self.stack.pop(-1)
-#             obj._analyze_adjoint()
-
-#     def _analyze_adjoint(self):
-#         if self.seeds[self.rho_name] is not None:
-#             self.fltr.apply_gradient(self.seed[self.rho_name], self.dfdx)
-
-#     def get_derivative(self, key):
-#         """
-#         Returns
-#         -------
-#         deriv : dict
-#             Partial derivative of the function of interest with respect to
-#         """
-
-# def _extract_var_value(self, var: str):
-#     """
-#     """
-
-#     if var in self.variables:
-#         if isinstance(self.variables[var], State):
-#             var_value = self.variables[var].value
-
-#         elif inspect.isclass(type(self.variables[var])):
-#             var_value = self.variables[var].outputs[var].value
-
-#         else:
-#             # COME BACK AND FIX THIS ERROR MESSAGE
-#             raise RuntimeError(
-#                 f"Variable named {var} cannot be accessed, this is a bug."
-#             )
-
-#     else:
-#         var_keys = self.variables.keys()
-#         raise ValueError(
-#             f"Variable '{var}' is not a valid variable for {self.__class__.__name__} object named '{self.obj_name}'. Valid variables are {[key for key in var_keys]}."
-#         )
-
-#     return var_value
-
-# def _extract_var_meta(self, var: str):
-#     """
-#     """
-
-#     # Check to make sure that the variable name provided is valid
-#     if var in self.variables:
-
-#         # If the variable has an associated State object, extract the information directly
-#         if isinstance(self.variables[var], State):
-#             # Get the variable type from the State object, if applicable
-#             var_type = self.variables[var].data_type.__name__
-
-#             # Get the variable shape from the State object, if applicable
-#             var_shape = None
-#             if hasattr(self.variables[var], "shape"):
-#                 var_shape = self.variables[var].shape
-
-#             # Get the variable description from the State object
-#             var_desc = self.variables[var].desc
-
-#         # If the variable has an instance of another class (i.e. sub-analysis), extract the information from the corresponding output State of that object
-#         elif inspect.isclass(type(self.variables[var])):
-#             # Get the variable type from the linked output State object
-#             var_type = self.variables[var].outputs[var].data_type.__name__
-
-#             # Get the variable shape from the linked output State object, if applicable
-#             var_shape = None
-#             if hasattr(self.variables[var].outputs[var], "shape"):
-#                 var_shape = self.variables[var].outputs[var].shape
-
-#             # Get the variable description from the linked output State object
-#             var_desc = self.variables[var].outputs[var].desc
-
-#         else:
-#             # COME BACK AND FIX THIS ERROR MESSAGE
-#             raise RuntimeError(
-#                 f"Variable named {var} cannot be accessed, this is a bug."
-#             )
-
-#     # Raise an error if varible name is invalid
-#     else:
-#         var_keys = self.variables.keys()
-#         raise KeyError(
-#             f"Variable '{var}' is not a valid variable for {self.__class__.__name__} object named '{self.obj_name}'. Valid variables are {[key for key in var_keys]}."
-#         )
-
-#     return var_type, var_shape, var_desc

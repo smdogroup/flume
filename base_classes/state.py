@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class State:
     """
     This is a class to use for establishing a structure for variables and outputs of analysis classes.
