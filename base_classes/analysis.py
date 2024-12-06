@@ -815,24 +815,28 @@ class Analysis:
         global_name : str
             A string that is the global name for a given parameter, variable, or output of the object.
         """
-        if not self.analyzed:
+
+        # This check allows for variable/parameter global names to be accessed before the analyze method is called, but it will prevent the user from accessing any (potential) output names
+        if (not self.analyzed and not (local_name in self.parameters or local_name in self.variables)):
             raise ValueError(
-                f"The {self.__class__.__name__} object named '{self.obj_name}' has not been analyzed yet, so there are no outputs stored. This method should not be called until 'analyze' is called so that the outputs can be parsed for the provided local name, as well."
+                f"The {self.__class__.__name__} object named '{self.obj_name}' has not been analyzed yet, so the global names of outputs cannot be accessed. If you want to get the global name of an output, make sure 'analyze' has been called first."
             )
 
+        # Check to make sure that the provided local name is an output, parameter, or variable
         if (
             local_name not in self.parameters
             and local_name not in self.variables
             and local_name not in self.outputs
         ):
             raise ValueError(
-                f"Local name {local_name} is not within the parameter, variable, or output sets."
+                f"Local name '{local_name}' is not within the parameter, variable, or output sets."
             )
         else:
             global_name = f"{self.obj_name}.{local_name}"
 
         return global_name
 
+    # TODO: add method here for cs/fd
     def test_isolated_adjoint(self, debug_print=False, defined_vars={}):
         """
         Tests the adjoint implementation for an analysis object (ignores any sub-analyses for the isolated case). Currently, only the complex-step method is implemented for this test, so calculations must be complex-safe.
@@ -881,6 +885,11 @@ class Analysis:
 
         # Initialize the analysis
         self._initialize_analysis()
+
+        # Check to make sure that the design variables list is not empty
+        num_dvs = len(self.design_vars_list)
+        if num_dvs == 0:
+            raise RuntimeError("The number of declared design variables is zero, which is invalid for performing the adjoint test.")
 
         # Analyze the system
         self._analyze()
@@ -1010,9 +1019,9 @@ class Analysis:
         print("\n 1/ratio (cs/ans): ", 1 / ratio)
         print("-" * len(test_case))
 
-        return
+        return err
 
-    def test_combined_adjoint(self, debug_print=False, method="cs"):
+    def test_combined_adjoint(self, debug_print=False, method="cs", defined_vars={}):
         """
         Tests the adjoint implementation for an analysis object and accounts for any sub-analyses within the stack.
 
@@ -1022,10 +1031,22 @@ class Analysis:
             Boolean value that specifies whether debug print statements should be displayed
         method : str
             Either 'cs' or 'fd', which specifies that the method to check against the adjoint implementation is complex-step or finite-difference, respectively
+        defined_vars : dictionary
+            A dictionary where the keys correspond to the global variable names and the values are the numeric values that the variables should have. For example, if the user wants to set a variable 'x' for an analysis object 'analysis' to be value 1.0, defined_vars should be given as defined_vars = {'analysis.x': 1.0}. 
         """
+
+        # 
 
         # Perform a preliminary analysis to assemble the stack and form the connection maps
         self.analyze()
+
+        # Check to make sure that the design variables list is not empty for all of the objects
+        num_dvs = 0
+        for obj in self.stack:
+            num_dvs += len(obj.design_vars_list)
+
+        if num_dvs == 0:
+            raise RuntimeError("The number of declared design variables is zero, which is invalid for performing the adjoint test.")
 
         # If necessary, display the connections map information for the objects in the system
         if debug_print:
@@ -1071,15 +1092,19 @@ class Analysis:
             # Loop through the variables for the current object in the stack
             for var in def_var_values[obj]:
 
-                # If the variable has a shape, create a numpy array of that shape
-                if hasattr(obj.variables[var], "shape"):
-                    def_var_values[obj][var] = np.random.uniform(
-                        size=obj.variables[var].shape
-                    )
-
-                # Otherwise, set a random scalar value
+                # Check to see if the variable value is defined (used in some cases where values take on restricted bounds)
+                if f"{obj.obj_name}.{var}" in defined_vars:
+                    def_var_values[obj][var] = defined_vars[f"{obj.obj_name}.{var}"]
                 else:
-                    def_var_values[obj][var] = np.random.uniform()
+                    # If the variable has a shape, create a numpy array of that shape
+                    if hasattr(obj.variables[var], "shape"):
+                        def_var_values[obj][var] = np.random.uniform(
+                            size=obj.variables[var].shape
+                        )
+
+                    # Otherwise, set a random scalar value
+                    else:
+                        def_var_values[obj][var] = np.random.uniform()
 
             # Set the variable values for the current object
             obj.set_var_values(def_var_values[obj])
@@ -1282,7 +1307,7 @@ class Analysis:
             print("\n 1/ratio (fd/ans): ", 1 / ratio)
             print("-" * len(test_case))
 
-        return
+        return err
 
 
 # class AnalysisBase:
