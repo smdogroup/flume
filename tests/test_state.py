@@ -1,5 +1,5 @@
 import numpy as np
-from base_classes.state import State
+from flume.base_classes.state import State
 import unittest
 
 
