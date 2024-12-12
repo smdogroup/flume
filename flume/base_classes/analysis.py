@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-from base_classes.state import State
+from flume.base_classes.state import State
 
 
 # Define the default warning format
