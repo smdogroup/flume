@@ -1,4 +1,4 @@
-# SMDO FRAMEWORK OVERVIEW
+# FLUME OVERVIEW
 
 This repository contains the base classes for the analysis and optimization framework used within the SMDO group. It is intended to be minimalistic and provide the user with lots of flexibility for implementing their own analysis and optimization procedures while still providing a common structure. The key terminology and a description of each class is given below. Some examples are provided to establish a foundation for how to utilize this framework, but it is ultimatley structured to be flexible and fit the user's individual needs. 
 
