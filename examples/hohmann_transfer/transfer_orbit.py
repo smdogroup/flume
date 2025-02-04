@@ -1,5 +1,5 @@
-from base_classes.analysis import Analysis
-from base_classes.state import State
+from flume.base_classes.analysis import Analysis
+from flume.base_classes.state import State
 import numpy as np
 
 

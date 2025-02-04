@@ -1,5 +1,5 @@
-from base_classes.analysis import Analysis
-from base_classes.state import State
+from flume.base_classes.analysis import Analysis
+from flume.base_classes.state import State
 from examples.hohmann_transfer.vcirc import VCircAnalysis
 from examples.hohmann_transfer.transfer_orbit import TransferOrbitAnalysis
 from examples.hohmann_transfer.delta_v import DeltaVAnalysis

@@ -1,5 +1,5 @@
 import numpy as np
-from base_classes.analysis import Analysis
+from flume.base_classes.analysis import Analysis
 from examples.momentum_theory.momentum_model import MomentumTheorySegment
 from examples.momentum_theory.profile_parasitic_power import ProfileParasiticPower
 

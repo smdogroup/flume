@@ -1,5 +1,5 @@
 import numpy as np
-from base_classes.analysis import Analysis, State
+from flume.base_classes.analysis import Analysis, State
 
 
 class ProfileParasiticPower(Analysis):
