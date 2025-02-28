@@ -1,7 +1,6 @@
 import numpy as np
 from flume.base_classes.analysis import Analysis, State
 import matplotlib.pyplot as plt
-import niceplots
 import json
 from examples.momentum_theory.profile_parasitic_power import ProfileParasiticPower
 from typing import Optional
@@ -983,11 +982,6 @@ class MomentumTheorySegment(Analysis):
 
 
 if __name__ == "__main__":
-
-    # Set the plot style
-    plt.style.use(niceplots.get_style())
-
-    plt.rcParams["font.family"] = "serif"
 
     # Create the segment object
     seg = MomentumTheorySegment(seg_name="test", mode="descent", weight=20.0 * 9.81)
