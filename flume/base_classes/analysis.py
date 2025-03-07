@@ -51,6 +51,9 @@ class Analysis:
             else:
                 self.parameters[key] = self.default_parameters[key]
 
+        # Set the arritube that determines whether the object's forward analysis has been initialized
+        self.initialized = False
+
         # Set the attribute that determines whether the adjoint has been initialized
         self.adjoint_initialized = False
 
@@ -187,6 +190,7 @@ class Analysis:
             self.defined_vars.append(var)
 
         # Update the analyzed attribute, since after setting values for the design variables the analysis procedure would need to be performed again
+        self.initialized = False
         self.analyzed = False
 
         return
@@ -433,7 +437,7 @@ class Analysis:
         else:
             raise ValueError("Analysis mode must be either 'real' or 'complex'.")
 
-    def _initialize_analysis(self, mode="real"):
+    def _initialize_analysis(self, mode="real", prev_analyzed=None):
         """
         Initializes the internal data for the analysis procedure contained within the object. Nominally, this simply sets an attribute called 'analyzed', which is a boolean that stores whether the analysis procedure has been performed. If other procedures are required for this function, the derived class should contain an instance of this method and then call super()._initialize_analysis() immediately before the return statement.
         """
@@ -442,9 +446,22 @@ class Analysis:
         self._set_data_type(mode=mode)
 
         # Initialize the flag that specifies whether the analysis procedure has been performed
-        self.analyzed = False
+        # NOTE: original implementation was just to set self.anayzed = False; need to come back and fully resolve this feature
+        if not hasattr(self, "analyzed"):
 
-        return
+            self.analyzed = False
+
+        elif self.analyzed and prev_analyzed:
+            self.analyzed = True
+
+        elif self.analyzed and prev_analyzed is None:
+
+            self.analyzed = True
+
+        else:
+            self.analyzed = False
+
+        return self.analyzed
 
     def analyze(self, mode="real"):
         """
@@ -455,8 +472,11 @@ class Analysis:
         self.stack = self._make_stack()
 
         # Initialize the analyses for the items in the stack
+        prev_analyzed = None
         for analysis in self.stack:
-            analysis._initialize_analysis(mode=mode)
+            prev_analyzed = analysis._initialize_analysis(
+                mode=mode, prev_analyzed=prev_analyzed
+            )
 
         # Perform the analysis for each member in the stack
         for analysis in self.stack:
