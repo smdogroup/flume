@@ -448,13 +448,14 @@ class Analysis:
         # Initialize the flag that specifies whether the analysis procedure has been performed
         # NOTE: original implementation was just to set self.anayzed = False; need to come back and fully resolve this feature
         if not hasattr(self, "analyzed"):
-
+            # If the object does not have an analyzed attribute, it is set to be False, indicating that analysis must be performed
             self.analyzed = False
 
         elif self.analyzed and prev_analyzed:
             self.analyzed = True
 
         elif self.analyzed and prev_analyzed is None:
+            # This covers the case when the object is first in the stack, as prev_analyzed is None. If the object has already been analyzed, it does not get computed again. Otherwise, the system is analyzed.
 
             self.analyzed = True
 
@@ -463,7 +464,7 @@ class Analysis:
 
         return self.analyzed
 
-    def analyze(self, mode="real"):
+    def analyze(self, mode="real", debug_print=False):
         """
         Performs the analysis procedure for the object after combining the objects into a list that contains the stack. For each analysis in the stack, connections are established between sub-analyses and primary-analyses and then the private _analyze method is called.
         """
@@ -478,6 +479,9 @@ class Analysis:
                 mode=mode, prev_analyzed=prev_analyzed
             )
 
+            if debug_print:
+                print(f"Initialized analysis for object named '{analysis.obj_name}'.")
+
         # Perform the analysis for each member in the stack
         for analysis in self.stack:
             # Perform the connections for each object in the stack
@@ -486,6 +490,9 @@ class Analysis:
             # Perform the analysis for each object in the stack
             if not analysis.analyzed:
                 analysis._analyze()
+
+                if debug_print:
+                    print(f"Analysis performed for '{analysis.obj_name}'")
 
         return
 

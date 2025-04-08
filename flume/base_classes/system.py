@@ -1,7 +1,7 @@
 from flume.base_classes.analysis import Analysis
-import networkx as nx
 import graphviz as gv
 from icecream import ic
+from typing import List
 
 
 class System:
@@ -15,7 +15,7 @@ class System:
     5. Adding FOI, obj, cons to a log file (flume.log) that can be updated throughout the optimization procedure.
     """
 
-    def __init__(self, sys_name: str, top_level_analysis_list: list[Analysis]):
+    def __init__(self, sys_name: str, top_level_analysis_list: List[Analysis]):
 
         # Store the name for the system
         self.sys_name = sys_name
@@ -25,6 +25,28 @@ class System:
 
         # Assemble the list of all analysis objects
         self.full_analysis_list = self.assemble_full_analysis_list()
+
+        # Initialize the constraints dictionary (default assumes no constraints)
+        self.con_info = {}
+
+        return
+
+    def reset_analysis_flags(self):
+        """
+        Resets all of the analysis flags for all analyses within the system to be False. This is done when variable values are updated, as all systems must be analyzed again to propagate chanes in design variable values.
+        """
+
+        # Loop through each top-level analysis, resetting each analysis in the stack
+        for top_level in self.top_level_analysis_list:
+
+            # If the stack does not exist, make it
+            if not hasattr(top_level, "stack"):
+                # Assemble the stack
+                top_level.stack = top_level._make_stack()
+
+            # Loop through each object within the current top-level's analysis stack and set the analyzed attribute to be False
+            for analysis in top_level.stack:
+                analysis.analyzed = False
 
         return
 
@@ -172,9 +194,6 @@ class System:
 
         Thus, the argument here is given as: global_con_name = {"block1.x":0.0, "block2.y":1.0}
         """
-
-        # Initialize the constraints dictionary
-        self.con_info = {}
 
         # Loop through the keys in the dictionary and add them to the constraints for the system
         for key in global_con_name.keys():
