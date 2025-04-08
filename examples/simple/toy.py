@@ -238,12 +238,18 @@ if __name__ == "__main__":
     B1.set_var_values(variables={"x": 0.75})
 
     # Construct the system
-    sys = System(sys_name="sys", top_level_analysis_list=[B3, B4])
+    sys = System(
+        sys_name="sys",
+        top_level_analysis_list=[B3, B4],
+        log_name="flume.log",
+        log_prefix="examples/simple/test_paropt",
+    )
 
     # sys.declare_design_vars(global_var_name={"block1.x": {"ub": 1.0}})
     sys.declare_design_vars(global_var_name={"block1.x": {"lb": 0.5, "ub": 1.0}})
     sys.declare_objective(global_obj_name="block3.alpha")
     sys.declare_constraints(global_con_name={"block4.beta": -3.0})
+    sys.declare_foi(global_foi_name=["block2.z"])
 
     # Create the FlumeParOptInterface
     interface = FlumeParOptInterface(flume_sys=sys)

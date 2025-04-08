@@ -2,6 +2,8 @@ from flume.base_classes.analysis import Analysis
 import graphviz as gv
 from icecream import ic
 from typing import List
+from flume.interfaces.utils import Logger
+import os
 
 
 class System:
@@ -15,13 +17,26 @@ class System:
     5. Adding FOI, obj, cons to a log file (flume.log) that can be updated throughout the optimization procedure.
     """
 
-    def __init__(self, sys_name: str, top_level_analysis_list: List[Analysis]):
+    def __init__(
+        self,
+        sys_name: str,
+        top_level_analysis_list: List[Analysis],
+        log_name: str = "flume.log",
+        log_prefix: str = None,
+    ):
 
         # Store the name for the system
         self.sys_name = sys_name
 
         # Store the list of analyses
         self.top_level_analysis_list = top_level_analysis_list
+
+        # Store the information for the logging
+        self.log_name = log_name
+        self.log_prefix = log_prefix
+
+        # Configure the file path for th elog file
+        Logger.set_log_path(os.path.join(self.log_prefix, self.log_name))
 
         # Assemble the list of all analysis objects
         self.full_analysis_list = self.assemble_full_analysis_list()
@@ -318,5 +333,61 @@ class System:
 
         # Store the foi dictionary
         self.foi = foi
+
+        return
+
+    def log_information(self, iter_number):
+        """
+        DOCS:
+        """
+
+        # Log the header names if the current iter number is divisible by 10
+        if iter_number % 10 == 0:
+            # Log the header for the iter number and objective
+            obj_header = f"obj: {self.obj_local_name}"
+            Logger.log("\n%5s%20s" % ("iter", obj_header), end="")
+
+            # Log the constraints
+            for con in self.foi["cons"].keys():
+                con_header = f"con: {self.foi['cons'][con]['local_name']}"
+                Logger.log("%20s" % con_header, end="")
+
+            # Log the other functions of interest
+            for other in self.foi["other"].keys():
+                other_header = f"other: {self.foi['other'][other]['local_name']}"
+                Logger.log("%20s" % other_header, end="")
+
+        # Log the values for the current iteration and objective value
+        obj_val = (
+            self.foi["obj"]["instance"].outputs[self.foi["obj"]["local_name"]].value
+        )
+
+        Logger.log("\n%5d%20.10e" % (iter_number, obj_val), end="")
+
+        # Log the values for the constraints at the current iter
+        for con in self.foi["cons"].keys():
+            con_val = (
+                self.foi["cons"][con]["instance"]
+                .outputs[self.foi["cons"][con]["local_name"]]
+                .value
+            )
+
+            if not isinstance(con_val, str):
+                con_val = "%20.10e" % con_val
+
+            Logger.log("%20s" % con_val, end="")
+
+        # Log the values for the other FOI
+        for other in self.foi["other"].keys():
+            other_val = (
+                self.foi["other"][other]["instance"]
+                .outputs[self.foi["other"][other]["local_name"]]
+                .value
+            )
+
+            if not isinstance(other_val, str):
+                other_val = "%20.10e" % other_val
+
+            Logger.log("%20s" % other_val, end="")
 
         return

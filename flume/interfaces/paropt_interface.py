@@ -52,7 +52,6 @@ class FlumeParOptInterface:
 
         ndvs = 0
         self.indices = {}
-        # TODO: should probably store info about the indices that correspond to the different variables for the PVec
         # Loop through each of the keys in the design_vars_info dictionary
         for var in self.flume_sys.design_vars_info:
 
@@ -178,6 +177,10 @@ class FlumeParOptInterface:
 
         # print("\nCALLING EVALOBJCON")
 
+        # If the Flume system does not have an FOI attribute, set it
+        if not hasattr(self.flume_sys, "foi"):
+            self.flume_sys.declare_foi(global_foi_name=[])
+
         # Check to make sure that the objective analysis info has been set, otherwise raise an error
         if not hasattr(self.flume_sys, "obj_analysis"):
             raise RuntimeError(
@@ -213,9 +216,9 @@ class FlumeParOptInterface:
 
             # Append the constraint value to the constraints list
             con_list.append(con_val)
-        # ic(con_list)
 
-        # TODO: FOI tracker
+        # Call the logger function
+        self.flume_sys.log_information(iter_number=self.it_counter)
 
         # Set the failure flag
         fail = 0
@@ -265,7 +268,6 @@ class FlumeParOptInterface:
             # Assign the gradient
             g[start:end] = gradx_i
 
-        # TODO: Evaluate the constraint gradients
         con_index = 0
         # Loop through the constraints in the system
         for con in self.flume_sys.con_info:

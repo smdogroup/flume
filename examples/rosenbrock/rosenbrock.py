@@ -87,7 +87,12 @@ if __name__ == "__main__":
     rosenbrock = Rosenbrock(obj_name="rosenbrock", sub_analyses=[], a=a, b=b)
 
     # Construct the system
-    sys = System(sys_name="rosen_sys", top_level_analysis_list=[rosenbrock])
+    sys = System(
+        sys_name="rosen_sys",
+        top_level_analysis_list=[rosenbrock],
+        log_name="flume.log",
+        log_prefix="examples/rosenbrock/test_paropt",
+    )
 
     # Declare the design variables for the system
     sys.declare_design_vars(
