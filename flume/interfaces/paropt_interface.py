@@ -24,9 +24,34 @@ class ParOptProb(ParOpt.Problem):
 
 class FlumeParOptInterface:
 
-    def __init__(self, flume_sys: System):
+    def __init__(self, flume_sys: System, callback=None):
+        """
+        Creates an interface that is used to link an instance of a Flume System to a ParOpt optimization problem.
+
+        Parameters
+        ----------
+        flume_sys : System
+            Instance of a Flume System that represents the problem to be solved with ParOpt
+        callback : callable function, default None
+            This is a callable function that gets executed during every iteration of the evalObjCon method during optimization. See below for the structure of the function
+
+        Callback Function
+        -----------------
+        The callback function is an arbitrary function that the user writes, and it will be called during every evalObjCon execution. It is required that the function is setup such that it takes in two arguments:
+
+        def user_callback(x, it_number):
+            ...
+
+        Here, the parameters are:
+        x : current design variable info for the problem
+        it_number : current iteration number for the system
+        """
+
         # Store the flume system as an attribute
         self.flume_sys = flume_sys
+
+        # Store the callback function
+        self.callback = callback
 
         # Store the string that declares the optimizer
         self.optimizer = "paropt"
@@ -219,6 +244,10 @@ class FlumeParOptInterface:
 
         # Call the logger function
         self.flume_sys.log_information(iter_number=self.it_counter)
+
+        # Call the callback function, if it was provided
+        if self.callback is not None:
+            self.callback(x, self.it_counter)
 
         # Set the failure flag
         fail = 0

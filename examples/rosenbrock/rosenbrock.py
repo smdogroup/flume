@@ -78,6 +78,13 @@ class Rosenbrock(Analysis):
         return
 
 
+def rosenbrock_callback(x, it_number):
+
+    print(f"Current iter = {it_number}")
+
+    return None
+
+
 if __name__ == "__main__":
 
     # Construct the analysis object for the Rosenbrock function
@@ -105,7 +112,7 @@ if __name__ == "__main__":
     sys.declare_objective(global_obj_name="rosenbrock.f")
 
     # Create the FlumeParOptInterface
-    interface = FlumeParOptInterface(flume_sys=sys)
+    interface = FlumeParOptInterface(flume_sys=sys, callback=rosenbrock_callback)
 
     # Construct the paropt problem for the Flume system
     paroptprob = interface.construct_paropt_problem()
