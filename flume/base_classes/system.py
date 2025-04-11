@@ -46,22 +46,26 @@ class System:
 
         return
 
-    def reset_analysis_flags(self):
+    def reset_analysis_flags(self, it_counter):
         """
         Resets all of the analysis flags for all analyses within the system to be False. This is done when variable values are updated, as all systems must be analyzed again to propagate chanes in design variable values.
         """
 
-        # Loop through each top-level analysis, resetting each analysis in the stack
-        for top_level in self.top_level_analysis_list:
+        # If it_counter is zero, skip this setp
+        if it_counter == 0:
+            pass
+        else:
+            # Loop through each top-level analysis, resetting each analysis in the stack
+            for top_level in self.top_level_analysis_list:
 
-            # If the stack does not exist, make it
-            if not hasattr(top_level, "stack"):
-                # Assemble the stack
-                top_level.stack = top_level._make_stack()
+                # If the stack does not exist, make it
+                if not hasattr(top_level, "stack"):
+                    # Assemble the stack
+                    top_level.stack = top_level._make_stack()
 
-            # Loop through each object within the current top-level's analysis stack and set the analyzed attribute to be False
-            for analysis in top_level.stack:
-                analysis.analyzed = False
+                # Loop through each object within the current top-level's analysis stack and set the analyzed attribute to be False
+                for analysis in top_level.stack:
+                    analysis.analyzed = False
 
         return
 
@@ -174,13 +178,16 @@ class System:
             f"No instance found for object named '{instance_name}'! Verify the definition for the State named '{instance_name}.{var_name}'"
         )
 
-    def declare_objective(self, global_obj_name):
+    def declare_objective(self, global_obj_name, obj_scale=1.0):
         """
-        Sets the objective function for the optimization problem according to the provided global output name. Nominally, this output should be associated with one of the top-level analyses for the system (i.e. included in the analysis_list).
+        Sets the objective function for the optimization problem according to the provided global output name. Nominally, this output should be associated with one of the top-level analyses for the system (i.e. included in the analysis_list). The second argument, obj_scale, is a scaling factor that will be applied to the computed objective function value. The scaling factor should nominally scale the objective function value to O(1).
         """
 
         # Using the provided objective name, store the associated analysis object and the local variable name
         obj_analysis_name, self.obj_local_name = global_obj_name.split(".")
+
+        # Store the objective scale
+        self.obj_scale = obj_scale
 
         # Find the instance for the objective analysis object
         self.obj_analysis = self._find_analysis_object(
@@ -191,23 +198,32 @@ class System:
 
     def declare_constraints(self, global_con_name: dict):
         """
-        Sets the constraints for the optimization problem according to the provided global output names. Following the convention for ParOpt, the constraints are assumed to be of the following form:
+        Sets the constraints for the optimization problem according to the provided global output names. Internally, constraints are restructured such that they are defined as:
 
-        c(x) >= 0.0
+        c(x) >= 0.0,
+
+        but the user can specify the original direction and right-hand side value for the constraint.
 
         Parameters
         ----------
         global_con_name_dict : dict
-            This is a dictionary. The keys correspond to the global output names for the constraints. The values correspond to the right hand side for the constraint following the format above. If the value is not 0.0, then the RHS value will be subtracted from the evaluated constraint value during the optimization procedure.
+            This is a dictionary of dictionaries. The keys correspond to the global output names for the constraints. The inner dictionary specifies additional information about the structure of the constriant, including the following:
+
+                'rhs' : float - specifies the right hand side of the constraint equation. Internally, this will convert the constraint to an equivalent form that normalizes it, preserving the specified inequality direction. If the 'rhs' value is 0.0, no scaling is applied
+                'direction' : str - default is assumed 'geq', which is >=, but the alternative is 'leq', <=
+
 
         Example
         -------
 
         Here, the constraints are defined as follows:
-            x >= 0.0
+            x <= 1.0
             y >= 1.0
 
-        Thus, the argument here is given as: global_con_name = {"block1.x":0.0, "block2.y":1.0}
+        Thus, the argument here is given as: global_con_name = {
+                                                    "block1.x":{"direction":"leq", "rhs":1.0},
+                                                    "block2.y":{"rhs":1.0}
+                                                    }
         """
 
         # Loop through the keys in the dictionary and add them to the constraints for the system
@@ -226,7 +242,17 @@ class System:
             # Add the analysis object and local constraint name for the con_info dictionary
             self.con_info[key]["instance"] = con_analysis
             self.con_info[key]["local_name"] = con_local_name
-            self.con_info[key]["rhs"] = global_con_name[key]
+            self.con_info[key]["rhs"] = global_con_name[key]["rhs"]
+
+            if "direction" not in global_con_name[key].keys():
+                self.con_info[key]["direction"] = "geq"
+            else:
+                if global_con_name[key]["direction"] not in ["geq", "leq"]:
+                    raise RuntimeError(
+                        f"The value for 'direction' for the constraint {key} must be 'geq' or 'leq', not {self.con_info[key]['direction']}"
+                    )
+                else:
+                    self.con_info[key]["direction"] = global_con_name[key]["direction"]
 
         return
 
