@@ -1,6 +1,7 @@
 import numpy as np
 import warnings
 from flume.base_classes.state import State
+import time
 
 
 # Define the default warning format
@@ -489,7 +490,11 @@ class Analysis:
 
             # Perform the analysis for each object in the stack
             if not analysis.analyzed:
+                start = time.time()
                 analysis._analyze()
+                end = time.time()
+
+                analysis.forward_profile = end - start
 
                 if debug_print:
                     print(f"Analysis performed for '{analysis.obj_name}'")
@@ -548,7 +553,11 @@ class Analysis:
 
         for analysis in self.stack[::-1]:
 
+            start = time.time()
             analysis._analyze_adjoint()
+            end = time.time()
+
+            analysis.adjoint_profile = end - start
 
             if debug_print:
                 print(
