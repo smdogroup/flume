@@ -35,8 +35,9 @@ class System:
         self.log_name = log_name
         self.log_prefix = log_prefix
 
-        # Configure the file path for th elog file
-        Logger.set_log_path(os.path.join(self.log_prefix, self.log_name))
+        # Configure the file path for the log file
+        self.outputs_log = Logger(log_path=self.log_prefix, log_name=self.log_name)
+        self.profile_log = Logger(log_path=self.log_prefix, log_name="profile.log")
 
         # Assemble the list of all analysis objects
         self.full_analysis_list = self.assemble_full_analysis_list()
@@ -366,29 +367,28 @@ class System:
         """
         DOCS:
         """
-
         # Log the header names if the current iter number is divisible by 10
         if iter_number % 10 == 0:
             # Log the header for the iter number and objective
             obj_header = f"obj: {self.obj_local_name}"
-            Logger.log("\n%5s%20s" % ("iter", obj_header), end="")
+            self.outputs_log.log("\n%5s%20s" % ("iter", obj_header), end="")
 
             # Log the constraints
             for con in self.foi["cons"].keys():
                 con_header = f"con: {self.foi['cons'][con]['local_name']}"
-                Logger.log("%20s" % con_header, end="")
+                self.outputs_log.log("%20s" % con_header, end="")
 
             # Log the other functions of interest
             for other in self.foi["other"].keys():
                 other_header = f"other: {self.foi['other'][other]['local_name']}"
-                Logger.log("%20s" % other_header, end="")
+                self.outputs_log.log("%20s" % other_header, end="")
 
         # Log the values for the current iteration and objective value
         obj_val = (
             self.foi["obj"]["instance"].outputs[self.foi["obj"]["local_name"]].value
         )
 
-        Logger.log("\n%5d%20.10e" % (iter_number, obj_val), end="")
+        self.outputs_log.log("\n%5d%20.10e" % (iter_number, obj_val), end="")
 
         # Log the values for the constraints at the current iter
         for con in self.foi["cons"].keys():
@@ -401,7 +401,7 @@ class System:
             if not isinstance(con_val, str):
                 con_val = "%20.10e" % con_val
 
-            Logger.log("%20s" % con_val, end="")
+            self.outputs_log.log("%20s" % con_val, end="")
 
         # Log the values for the other FOI
         for other in self.foi["other"].keys():
@@ -414,6 +414,33 @@ class System:
             if not isinstance(other_val, str):
                 other_val = "%20.10e" % other_val
 
-            Logger.log("%20s" % other_val, end="")
+            self.outputs_log.log("%20s" % other_val, end="")
+
+        return
+
+    def profile_iteration(self, iter_number):
+        """
+        DOCS:
+        """
+
+        # Log the analysis object names if the current iteration number is divisible by 10
+        if iter_number % 10 == 0:
+            # Log the header for the iter number and each analysis object name in the stack
+            self.profile_log.log("\n%5s" % ("iter"), end="")
+
+            for analysis in self.full_analysis_list:
+                self.profile_log.log(
+                    "%20s %20s"
+                    % (analysis.obj_name + ": fwd", analysis.obj_name + ": adj"),
+                    end="",
+                )
+
+        self.profile_log.log("\n%5d" % iter_number, end="")
+
+        for analysis in self.full_analysis_list:
+            self.profile_log.log(
+                "%20.6f %20.6f" % (analysis.forward_profile, analysis.adjoint_profile),
+                end="",
+            )
 
         return
