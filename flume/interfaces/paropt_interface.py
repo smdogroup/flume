@@ -158,13 +158,13 @@ class FlumeParOptInterface:
 
         return
 
-    def set_system_variables(self, x):
+    def set_system_variables(self, x, it_counter):
         """
         Sets the variable values for the analysis objects contained within the system.
         """
 
         # Since system variables are being set, all analysis objects must be recomputed
-        self.flume_sys.reset_analysis_flags()
+        self.flume_sys.reset_analysis_flags(it_counter)
 
         # Loop through the design variables for the system and set for their components
         for var in self.flume_sys.design_vars_info:
@@ -206,6 +206,8 @@ class FlumeParOptInterface:
         if not hasattr(self.flume_sys, "foi"):
             self.flume_sys.declare_foi(global_foi_name=[])
 
+        # TODO: need to add a copy of the top-level analysis list here and remove the analyses after they are performed
+
         # Check to make sure that the objective analysis info has been set, otherwise raise an error
         if not hasattr(self.flume_sys, "obj_analysis"):
             raise RuntimeError(
@@ -213,7 +215,7 @@ class FlumeParOptInterface:
             )
 
         # Set the variable values for the various analyses
-        self.set_system_variables(x)
+        self.set_system_variables(x, self.it_counter)
 
         # Perform the analysis for the objective function
         self.flume_sys.obj_analysis.analyze()
@@ -221,7 +223,10 @@ class FlumeParOptInterface:
         # Extract the objective function output
         self.obj_name = self.flume_sys.obj_local_name
         # ic(self.flume_sys.obj_analysis.outputs)
-        obj = self.flume_sys.obj_analysis.outputs[self.obj_name].value
+        obj = (
+            self.flume_sys.obj_analysis.outputs[self.obj_name].value
+            * self.flume_sys.obj_scale
+        )
 
         # Loop through each of the constraints and perform their respective analyses
         con_list = []
@@ -237,7 +242,26 @@ class FlumeParOptInterface:
 
             # ic(con_val)
 
-            con_val -= self.flume_sys.con_info[con]["rhs"]
+            # Using the direction information about the constraint, set the normalized constraint value
+            if self.flume_sys.con_info[con]["direction"] == "geq":
+                # If rhs is not 0.0, scale the constraint
+                if self.flume_sys.con_info[con]["rhs"] != 0.0:
+                    rhs_val = self.flume_sys.con_info[con]["rhs"]
+                    con_val = con_val / rhs_val - 1.0
+
+            elif self.flume_sys.con_info[con]["direction"] == "leq":
+                # If rhs is not 0.0, scale the constraint
+                if self.flume_sys.con_info[con]["rhs"] != 0.0:
+                    rhs_val = self.flume_sys.con_info[con]["rhs"]
+                    con_val = 1.0 - con_val / rhs_val
+                else:
+                    # This step is necessary only for 'leq' to convert constraint to proper form, c(x) >= 0.0
+                    con_val *= -1.0
+
+            else:
+                raise RuntimeError("Constraint direction must be 'geq' or 'leq'.")
+
+            # con_val -= self.flume_sys.con_info[con]["rhs"]
 
             # Append the constraint value to the constraints list
             con_list.append(con_val)
@@ -295,7 +319,7 @@ class FlumeParOptInterface:
             )
 
             # Assign the gradient
-            g[start:end] = gradx_i
+            g[start:end] = gradx_i * self.flume_sys.obj_scale
 
         con_index = 0
         # Loop through the constraints in the system
@@ -340,7 +364,21 @@ class FlumeParOptInterface:
 
                 # ic(gradc_i)
 
-                # Assign the constraint gradient
+                # Assign the constraint gradient, accounting for the scaling, when necessary
+                if self.flume_sys.con_info[con]["direction"] == "geq":
+                    # If rhs is not 0.0, apply the scale to the constraint
+                    if self.flume_sys.con_info[con]["rhs"] != 0.0:
+                        rhs_val = self.flume_sys.con_info[con]["rhs"]
+                        gradc_i /= rhs_val
+
+                elif self.flume_sys.con_info[con]["direction"] == "leq":
+                    # If rhs is not 0.0, scale the constraint
+                    if self.flume_sys.con_info[con]["rhs"] != 0.0:
+                        rhs_val = self.flume_sys.con_info[con]["rhs"]
+                        gradc_i /= -rhs_val
+                    else:
+                        gradc_i *= -1.0
+
                 A[con_index][start:end] = gradc_i
 
             # Update the constraint index

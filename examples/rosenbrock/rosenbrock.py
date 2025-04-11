@@ -78,11 +78,25 @@ class Rosenbrock(Analysis):
         return
 
 
-def rosenbrock_callback(x, it_number):
+class RosenbrockCallback:
+    def __init__(self, extra_param, obj=None):
+        self.extra_param = extra_param
+        self.obj = obj
 
-    print(f"Current iter = {it_number}")
+    def __call__(self, x, it_num):
+        print(f"Iteration {it_num}: x, y = {x[0], x[1]}")
+        # print(f"Extra param: {self.extra_param}")
+        # if self.obj:
+        #     print(
+        #         f"Object state: {self.obj.sys_name}"
+        #     )  # assuming the object has a 'state'
 
-    return None
+
+# def rosenbrock_callback(x, it_number):
+
+#     print(f"Current iter = {it_number}")
+
+#     return None
 
 
 if __name__ == "__main__":
@@ -92,6 +106,8 @@ if __name__ == "__main__":
     b = 100.0
 
     rosenbrock = Rosenbrock(obj_name="rosenbrock", sub_analyses=[], a=a, b=b)
+
+    rosenbrock.set_var_values(variables={"x": 0.0, "y": 0.0})
 
     # Construct the system
     sys = System(
@@ -112,7 +128,9 @@ if __name__ == "__main__":
     sys.declare_objective(global_obj_name="rosenbrock.f")
 
     # Create the FlumeParOptInterface
-    interface = FlumeParOptInterface(flume_sys=sys, callback=rosenbrock_callback)
+    callback = RosenbrockCallback(extra_param="test", obj=sys)
+
+    interface = FlumeParOptInterface(flume_sys=sys, callback=callback)
 
     # Construct the paropt problem for the Flume system
     paroptprob = interface.construct_paropt_problem()

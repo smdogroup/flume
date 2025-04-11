@@ -188,7 +188,7 @@ class Block4(Analysis):
         q = self.variables["q"].value
 
         # Compute the outputs
-        beta = -1 / q
+        beta = 1 / q
 
         # Update analyzed attribute
         self.analyzed = True
@@ -208,7 +208,7 @@ class Block4(Analysis):
         q = self.variables["q"].value
 
         # Compute qb
-        qb = betab * 1.0 / q**2
+        qb = betab * -1.0 / q**2
 
         # Update the analyzed adjoint attribute
         self.adjoint_analyzed = True
@@ -247,8 +247,13 @@ if __name__ == "__main__":
 
     # sys.declare_design_vars(global_var_name={"block1.x": {"ub": 1.0}})
     sys.declare_design_vars(global_var_name={"block1.x": {"lb": 0.5, "ub": 1.0}})
-    sys.declare_objective(global_obj_name="block3.alpha")
-    sys.declare_constraints(global_con_name={"block4.beta": -3.0})
+    sys.declare_objective(global_obj_name="block3.alpha", obj_scale=10.0)
+    sys.declare_constraints(
+        global_con_name={
+            "block4.beta": {"rhs": 3.0, "direction": "leq"},
+            "block1.y": {"direction": "geq", "rhs": 1.25},
+        }
+    )
     sys.declare_foi(global_foi_name=["block2.z"])
 
     # Create the FlumeParOptInterface
@@ -259,6 +264,13 @@ if __name__ == "__main__":
     options = interface.get_paropt_default_options(
         output_prefix="examples/simple/test_paropt"
     )
+
+    # # Graph the system
+    # graph = sys.graph_network()
+
+    # graph.view()
+
+    # exit()
 
     # Check the gradients for the system
     for i in range(5):
