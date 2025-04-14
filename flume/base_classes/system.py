@@ -428,7 +428,7 @@ class System:
             # Log the header for the iter number and each analysis object name in the stack
             self.profile_log.log("\n%5s" % ("iter"), end="")
 
-            for analysis in self.full_analysis_list:
+            for analysis in self.top_level_analysis_list:
                 self.profile_log.log(
                     "%20s %20s"
                     % (analysis.obj_name + ": fwd", analysis.obj_name + ": adj"),
@@ -437,9 +437,9 @@ class System:
 
         self.profile_log.log("\n%5d" % iter_number, end="")
 
-        for analysis in self.full_analysis_list:
+        for analysis in self.top_level_analysis_list:
             self.profile_log.log(
-                "%20.6f %20.6f" % (analysis.forward_profile, analysis.adjoint_profile),
+                "%20.6f %20.6f" % (analysis.forward_total, analysis.adjoint_total),
                 end="",
             )
 
