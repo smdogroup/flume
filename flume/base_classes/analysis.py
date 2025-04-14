@@ -476,14 +476,19 @@ class Analysis:
         # Initialize the analyses for the items in the stack
         prev_analyzed = None
         for analysis in self.stack:
+            initialize_start = time.time()
             prev_analyzed = analysis._initialize_analysis(
                 mode=mode, prev_analyzed=prev_analyzed
             )
+            initialize_end = time.time()
 
             if debug_print:
-                print(f"Initialized analysis for object named '{analysis.obj_name}'.")
+                print(
+                    f"Initialized analysis for object named '{analysis.obj_name} in {(initialize_end - initialize_start):.4f}'."
+                )
 
         # Perform the analysis for each member in the stack
+        self.forward_total = 0.0
         for analysis in self.stack:
             # Perform the connections for each object in the stack
             analysis._connect()
@@ -494,10 +499,15 @@ class Analysis:
                 analysis._analyze()
                 end = time.time()
 
-                analysis.forward_profile = end - start
+                analysis_time = end - start
+                analysis.forward_profile = analysis_time
 
+                # Add the total time for the current analyze method
+                self.forward_total += analysis_time
                 if debug_print:
-                    print(f"Analysis performed for '{analysis.obj_name}'")
+                    print(
+                        f"Analysis performed for '{analysis.obj_name}' in {analysis_time} seconds."
+                    )
 
         return
 
@@ -551,13 +561,17 @@ class Analysis:
                     f"\n Initialized adjoint for class {analysis.__class__.__name__} named '{analysis.obj_name}'."
                 )
 
+        self.adjoint_total = 0.0
         for analysis in self.stack[::-1]:
 
             start = time.time()
             analysis._analyze_adjoint()
             end = time.time()
 
-            analysis.adjoint_profile = end - start
+            adjoint_time = end - start
+            analysis.adjoint_profile = adjoint_time
+
+            self.adjoint_total += adjoint_time
 
             if debug_print:
                 print(

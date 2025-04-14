@@ -1,5 +1,4 @@
 import os
-from icecream import ic
 
 
 class Logger:
@@ -11,7 +10,6 @@ class Logger:
 
         # Set the log file path
         self.log_filepath = self.set_log_file_path()
-        ic(self.log_filepath)
 
     def set_log_file_path(self):
 
