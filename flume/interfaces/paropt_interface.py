@@ -66,7 +66,17 @@ class FlumeParOptInterface:
 
         # Set the number of constraints
         if hasattr(self.flume_sys, "con_info"):
-            self.ncon = len(self.flume_sys.con_info.keys())
+            # Get the keys for the constraints
+            con_keys = self.flume_sys.con_info.keys()
+
+            ncon = 0
+            for con in con_keys:
+                if self.flume_sys.con_info[con]["direction"] == "both":
+                    ncon += 2
+                else:
+                    ncon += 1
+
+            self.ncon = ncon
         else:
             self.ncon = 0
 
@@ -258,6 +268,9 @@ class FlumeParOptInterface:
                     rhs_val = self.flume_sys.con_info[con]["rhs"]
                     con_val = con_val / rhs_val - 1.0
 
+                # Append the constraint value to the constraints list
+                con_list.append(con_val)
+
             elif self.flume_sys.con_info[con]["direction"] == "leq":
                 # If rhs is not 0.0, scale the constraint
                 if self.flume_sys.con_info[con]["rhs"] != 0.0:
@@ -267,13 +280,40 @@ class FlumeParOptInterface:
                     # This step is necessary only for 'leq' to convert constraint to proper form, c(x) >= 0.0
                     con_val *= -1.0
 
+                # Append the constraint value to the constraints list
+                con_list.append(con_val)
+
+            elif self.flume_sys.con_info[con]["direction"] == "both":
+                # If rhs is not 0.0, scale the constraints
+                if self.flume_sys.con_info[con]["rhs"] != 0.0:
+                    rhs_val = self.flume_sys.con_info[con]["rhs"]
+
+                    # Greater than inequality part
+                    con_val_geq = con_val / rhs_val - 1.0
+
+                    con_list.append(con_val_geq)
+
+                    # Less than inequality part
+                    con_val_leq = 1.0 - con_val / rhs_val
+
+                    con_list.append(con_val_leq)
+                else:
+                    # Greater than inequality part
+                    con_val_geq = con_val
+
+                    con_list.append(con_val_geq)
+
+                    # Less than inequality part
+                    con_val_leq = -con_val
+
+                    con_list.append(con_val_leq)
+
             else:
-                raise RuntimeError("Constraint direction must be 'geq' or 'leq'.")
+                raise RuntimeError(
+                    "Constraint direction must be 'geq', 'leq', or 'both'."
+                )
 
             # con_val -= self.flume_sys.con_info[con]["rhs"]
-
-            # Append the constraint value to the constraints list
-            con_list.append(con_val)
 
         # Call the logger function
         self.flume_sys.log_information(iter_number=self.it_counter)
@@ -380,6 +420,8 @@ class FlumeParOptInterface:
                         rhs_val = self.flume_sys.con_info[con]["rhs"]
                         gradc_i /= rhs_val
 
+                    A[con_index][start:end] = gradc_i
+
                 elif self.flume_sys.con_info[con]["direction"] == "leq":
                     # If rhs is not 0.0, scale the constraint
                     if self.flume_sys.con_info[con]["rhs"] != 0.0:
@@ -388,7 +430,32 @@ class FlumeParOptInterface:
                     else:
                         gradc_i *= -1.0
 
-                A[con_index][start:end] = gradc_i
+                    A[con_index][start:end] = gradc_i
+
+                elif self.flume_sys.con_info[con]["direction"] == "both":
+                    # If rhs is not 0.0, scale the constraints
+                    if self.flume_sys.con_info[con]["rhs"] != 0.0:
+                        rhs_val = self.flume_sys.con_info[con]["rhs"]
+
+                        # Greater than inequality part
+                        gradc_i_geq = gradc_i / rhs_val
+
+                        A[con_index][start:end] = gradc_i_geq
+
+                        con_index += 1
+
+                        # Less than inequality part
+                        gradc_i_leq = -gradc_i / rhs_val
+
+                        A[con_index][start:end] = gradc_i_leq
+                    else:
+                        # Greater than inequality part
+                        A[con_index][start:end] = gradc_i
+
+                        con_index += 1
+
+                        # Less than inequality part
+                        A[con_index][start:end] = -1.0 * gradc_i
 
             # Update the constraint index
             con_index += 1

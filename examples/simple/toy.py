@@ -251,7 +251,7 @@ if __name__ == "__main__":
     sys.declare_constraints(
         global_con_name={
             "block4.beta": {"rhs": 3.0, "direction": "leq"},
-            "block1.y": {"direction": "geq", "rhs": 1.25},
+            "block1.y": {"direction": "both", "rhs": 1.25},
         }
     )
     sys.declare_foi(global_foi_name=["block2.z"])

@@ -152,14 +152,23 @@ class System:
                 else:
                     # Extract the States that are connected between the objects
                     connect_labels = list(sub.connects.keys())
-                    connect_str = ", ".join(connect_labels)
+                    # connect_str = ", ".join(connect_labels)
 
-                    # Graph the edge and add the label for the connection
-                    graph.edge(
-                        stack[i - 1].obj_name,
-                        sub.obj_name,
-                        label=f"{connect_str}",
-                    )
+                    # FIXME: need to fix this logic so that outputs are not repeated in the visualization
+                    # Loop through the keys in the connections dictionary
+                    for out in connect_labels:
+                        # Add the edge to the graph and the connection label
+                        graph.edge(
+                            sub.connects[out].obj_name, sub.obj_name, label=f"{out}"
+                        )
+
+                    # ic(sub.connects)
+                    # # Graph the edge and add the label for the connection
+                    # graph.edge(
+                    #     stack[i - 1].obj_name,
+                    #     sub.obj_name,
+                    #     label=f"{connect_str}",
+                    # )
 
         return graph
 
@@ -248,9 +257,9 @@ class System:
             if "direction" not in global_con_name[key].keys():
                 self.con_info[key]["direction"] = "geq"
             else:
-                if global_con_name[key]["direction"] not in ["geq", "leq"]:
+                if global_con_name[key]["direction"] not in ["geq", "leq", "both"]:
                     raise RuntimeError(
-                        f"The value for 'direction' for the constraint {key} must be 'geq' or 'leq', not {self.con_info[key]['direction']}"
+                        f"The value for 'direction' for the constraint {key} must be 'geq', 'leq', or 'both' and not {self.con_info[key]['direction']}"
                     )
                 else:
                     self.con_info[key]["direction"] = global_con_name[key]["direction"]
