@@ -990,7 +990,13 @@ class Analysis:
         for var in deriv_vals:
 
             # Compute the contribution to the exact derivative for the current variable
-            contr = np.dot(perts["pert_" + var], deriv_vals[var])
+            if isinstance(def_var_values[var], np.ndarray):
+                if deriv_vals[var].ndim == 2:
+                    contr = np.dot(perts["pert_" + var], deriv_vals[var].flatten())
+                else:
+                    contr = np.dot(perts["pert_" + var], deriv_vals[var])
+            else:
+                contr = np.dot(perts["pert_" + var], deriv_vals[var])
 
             # Add the contribution for the current variable to the total value
             ans_tot += contr
@@ -1027,9 +1033,22 @@ class Analysis:
 
                 if method == "cs":
                     # Perturb the design variable by a small amount in the imaginary plane in the previously determined random direction
-                    pert_var_values[var] = (
-                        def_var_values[var] + 1.0j * dh * perts["pert_" + var]
-                    )
+
+                    if isinstance(def_var_values[var], np.ndarray):
+                        if def_var_values[var].ndim == 2:
+                            pert_var_values[var] = def_var_values[
+                                var
+                            ] + 1.0j * dh * np.reshape(
+                                perts["pert_" + var], def_var_values[var].shape
+                            )
+                        else:
+                            pert_var_values[var] = (
+                                def_var_values[var] + 1.0j * dh * perts["pert_" + var]
+                            )
+                    else:
+                        pert_var_values[var] = (
+                            def_var_values[var] + 1.0j * dh * perts["pert_" + var]
+                        )
 
                 elif method == "fd":
 
@@ -1039,9 +1058,16 @@ class Analysis:
                             def_var_values[var] + dh * perts["pert_" + var].item()
                         )
                     else:
-                        pert_var_values[var] = (
-                            def_var_values[var] + dh * perts["pert_" + var]
-                        )
+                        if def_var_values[var].ndim == 2:
+                            pert_var_values[var] = def_var_values[
+                                var
+                            ] + dh * np.reshape(
+                                perts["pert_" + var], def_var_values[var].shape
+                            )
+                        else:
+                            pert_var_values[var] = (
+                                def_var_values[var] + dh * perts["pert_" + var]
+                            )
 
                 if debug_print:
                     print(f"    \n {var} value: ", pert_var_values[var])
