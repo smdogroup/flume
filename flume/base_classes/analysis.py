@@ -121,9 +121,9 @@ class Analysis:
 
         # Add sub-analyses to the stack
         for sub_analysis in self.sub_analyses:
-            stack.extend(sub_analysis._make_stack())
+            if sub_analysis not in stack:
+                stack.extend(sub_analysis._make_stack())
 
-        # Add the current analysis to the stack
         stack.append(self)
 
         return stack
@@ -489,6 +489,7 @@ class Analysis:
 
         # Perform the analysis for each member in the stack
         self.forward_total = 0.0
+        self.forward_stack = []
         for analysis in self.stack:
             # Perform the connections for each object in the stack
             analysis._connect()
@@ -498,6 +499,9 @@ class Analysis:
                 start = time.time()
                 analysis._analyze()
                 end = time.time()
+
+                # Append the current analysis object to the forward analysis stack
+                self.forward_stack.append(analysis)
 
                 analysis_time = end - start
                 analysis.forward_profile = analysis_time
@@ -562,7 +566,7 @@ class Analysis:
                 )
 
         self.adjoint_total = 0.0
-        for analysis in self.stack[::-1]:
+        for analysis in self.forward_stack[::-1]:
 
             start = time.time()
             analysis._analyze_adjoint()
