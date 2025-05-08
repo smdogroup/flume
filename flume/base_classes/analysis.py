@@ -490,18 +490,21 @@ class Analysis:
         # Perform the analysis for each member in the stack
         self.forward_total = 0.0
         self.forward_stack = []
+        seen = set()
         for analysis in self.stack:
             # Perform the connections for each object in the stack
             analysis._connect()
+
+            # Add the analysis to the seen list and the forward stack, if it has not already been seen
+            if analysis not in seen:
+                seen.add(analysis)
+                self.forward_stack.append(analysis)
 
             # Perform the analysis for each object in the stack
             if not analysis.analyzed:
                 start = time.time()
                 analysis._analyze()
                 end = time.time()
-
-                # Append the current analysis object to the forward analysis stack
-                self.forward_stack.append(analysis)
 
                 analysis_time = end - start
                 analysis.forward_profile = analysis_time
@@ -557,7 +560,7 @@ class Analysis:
         if not hasattr(self, "stack"):
             self.stack = self._make_stack()
 
-        for analysis in self.stack[::-1]:
+        for analysis in self.forward_stack[::-1]:
             analysis._initialize_adjoint()
 
             if debug_print:
