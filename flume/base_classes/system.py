@@ -150,25 +150,16 @@ class System:
                 if i == 0:
                     pass
                 else:
-                    # Extract the States that are connected between the objects
-                    connect_labels = list(sub.connects.keys())
-                    # connect_str = ", ".join(connect_labels)
+                    # Extract the States that are connected between the objects, if there are any connections
+                    if hasattr(sub, "connects"):
+                        connect_labels = list(sub.connects.keys())
 
-                    # FIXME: need to fix this logic so that outputs are not repeated in the visualization
-                    # Loop through the keys in the connections dictionary
-                    for out in connect_labels:
-                        # Add the edge to the graph and the connection label
-                        graph.edge(
-                            sub.connects[out].obj_name, sub.obj_name, label=f"{out}"
-                        )
-
-                    # ic(sub.connects)
-                    # # Graph the edge and add the label for the connection
-                    # graph.edge(
-                    #     stack[i - 1].obj_name,
-                    #     sub.obj_name,
-                    #     label=f"{connect_str}",
-                    # )
+                        # Loop through the keys in the connections dictionary
+                        for out in connect_labels:
+                            # Add the edge to the graph and the connection label
+                            graph.edge(
+                                sub.connects[out].obj_name, sub.obj_name, label=f"{out}"
+                            )
 
         return graph
 

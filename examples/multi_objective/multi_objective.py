@@ -1,5 +1,6 @@
 from flume.base_classes.analysis import Analysis
 from flume.base_classes.state import State
+from flume.base_classes.system import System
 import numpy as np
 from icecream import ic
 from typing import List, Union
@@ -265,3 +266,16 @@ if __name__ == "__main__":
     # Test the isolated adjoing for the system
     first.declare_design_vars(variables=["x"])
     multi.test_combined_adjoint(method="cs", debug_print=False)
+
+    # Create the flume system
+    sys = System(
+        sys_name="multiobj_test",
+        top_level_analysis_list=[multi],
+        log_prefix="examples/multi_objective",
+    )
+
+    multi.analyze()
+
+    # Graph the system
+    graph = sys.graph_network(make_connections=False)
+    graph.render("MultiObjective_SystemGraph", directory=sys.log_prefix, cleanup=True)
