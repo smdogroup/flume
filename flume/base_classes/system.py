@@ -102,11 +102,14 @@ class System:
         # Create the graph
         # graph = nx.Graph()
         graph = gv.Digraph(
-            name=f"{self.sys_name.upper()}", graph_attr={"rankdir": "LR"}
+            name=f"{self.sys_name.upper()}",
+            graph_attr={"rankdir": "LR", "ranksep": "0.7"},
+            node_attr={"shape": "box", "fontname": "Helvetica"},
         )
 
         # Initialize an empty list to store the systems added to the graph as nodes
         self.nodes = []
+        self.edges = {}
 
         # Loop through and add nodes to the graph (outer loop is top-level analyses, inner loop is individual sub-analyses)
         for analysis in self.top_level_analysis_list:
@@ -156,10 +159,28 @@ class System:
 
                         # Loop through the keys in the connections dictionary
                         for out in connect_labels:
-                            # Add the edge to the graph and the connection label
-                            graph.edge(
-                                sub.connects[out].obj_name, sub.obj_name, label=f"{out}"
-                            )
+
+                            # Add the entry to the edges dictionary for the current output, if necessary
+                            if out not in self.edges:
+                                self.edges[out] = []
+
+                            # Check if the edge already exists in the edges dictionary
+                            if (sub.connects[out].obj_name, sub.obj_name) in self.edges[
+                                out
+                            ]:
+                                pass
+                            else:
+                                # Add the edge label to the edges dictionary
+                                self.edges[out].append(
+                                    (sub.connects[out].obj_name, sub.obj_name)
+                                )
+
+                                # Add the edge to the graph and the connection label
+                                graph.edge(
+                                    sub.connects[out].obj_name,
+                                    sub.obj_name,
+                                    label=f"{out}",
+                                )
 
         return graph
 
