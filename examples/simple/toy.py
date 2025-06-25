@@ -265,10 +265,13 @@ if __name__ == "__main__":
         output_prefix="examples/simple/test_paropt"
     )
 
-    # # Graph the system
-    # graph = sys.graph_network()
+    # Graph the system
+    graph = sys.graph_network(
+        filename="Toy_SystemGraph", output_directory="examples/simple", interactive=True
+    )
+    # graph.render("test", format="svg", cleanup=True)
 
-    # graph.view()
+    # graph.view(filename="test.svg")
 
     # exit()
 
