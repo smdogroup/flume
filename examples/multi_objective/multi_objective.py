@@ -1,6 +1,7 @@
 from flume.base_classes.analysis import Analysis
 from flume.base_classes.state import State
 from flume.base_classes.system import System
+from flume.interfaces.paropt_interface import FlumeParOptInterface
 import numpy as np
 from icecream import ic
 from typing import List, Union
@@ -194,9 +195,7 @@ class MultiObjective(Analysis):
         w = self.parameters["w"]
 
         # Compute the multi objective value
-        # J = w * f + (1 - w) * g
-        # J = w * f
-        J = (1 - w) * g
+        J = w * f + (1 - w) * g
 
         # Update the analyzed attribute
         self.analyzed = True
@@ -231,8 +230,194 @@ class MultiObjective(Analysis):
         self.adjoint_analyzed = True
 
         # Update the derivative values for the variables
-        # self.variables["f"].set_deriv_value(deriv_val=fb)
+        self.variables["f"].set_deriv_value(deriv_val=fb)
         self.variables["g"].set_deriv_value(deriv_val=gb)
+
+        return
+
+
+class Intermediate(Analysis):
+
+    def __init__(self, obj_name: str, sub_analyses=List[ObjTerm1], **kwargs):
+
+        # Set default parameters
+        self.default_parameters = {}
+
+        # Perform the base class object initialization
+        super().__init__(obj_name=obj_name, sub_analyses=sub_analyses, **kwargs)
+
+        # Set the default State for the variables
+        f_var = State(value=1.0, desc="f state value", source=self)
+
+        # Construct variables dictionary
+        self.variables = {"f": f_var}
+
+        return
+
+    def _analyze(self):
+
+        # Extract the variable
+        f = self.variables["f"].value
+
+        # Compute the output
+        h = 3 * f
+
+        # Update the analyzed attribute
+        self.analyzed = True
+
+        # Store the outputs
+        self.outputs = {}
+
+        self.outputs["h"] = State(
+            value=h, desc="Intermediate constraint value, h", source=self
+        )
+
+        return
+
+    def _analyze_adjoint(self):
+
+        # Extract the output derivatives
+        hb = self.outputs["h"].deriv
+
+        # Extract the variable derivatives
+        fb = self.variables["f"].deriv
+
+        fb += hb * 3.0
+
+        # Update the analyzed adjoint attribute
+        self.adjoint_analyzed = True
+
+        # Update the derivative values
+        self.variables["f"].set_deriv_value(fb)
+
+        return
+
+
+class Intermediate2(Analysis):
+
+    def __init__(self, obj_name: str, sub_analyses=List[ObjTerm2], **kwargs):
+
+        # Set default parameters
+        self.default_parameters = {}
+
+        # Perform the base class object initialization
+        super().__init__(obj_name=obj_name, sub_analyses=sub_analyses, **kwargs)
+
+        # Set the default State for the variables
+        g_var = State(value=1.0, desc="g state value", source=self)
+
+        # Construct variables dictionary
+        self.variables = {"g": g_var}
+
+        return
+
+    def _analyze(self):
+
+        # Extract the variable
+        g = self.variables["g"].value
+
+        # Compute the output
+        i = 3 * g
+
+        # Update the analyzed attribute
+        self.analyzed = True
+
+        # Store the outputs
+        self.outputs = {}
+
+        self.outputs["i"] = State(value=i, desc="Intermediate value, i", source=self)
+
+        return
+
+    def _analyze_adjoint(self):
+
+        # Extract the output derivatives
+        ib = self.outputs["i"].deriv
+
+        # Extract the variable derivatives
+        gb = self.variables["g"].deriv
+
+        gb += ib * 3.0
+
+        # Update the analyzed adjoint attribute
+        self.adjoint_analyzed = True
+
+        # Update the derivative values
+        self.variables["g"].set_deriv_value(gb)
+
+        return
+
+
+class Constraint(Analysis):
+
+    def __init__(
+        self,
+        obj_name: str,
+        sub_analyses=List[Union[Intermediate, Intermediate2]],
+        **kwargs
+    ):
+
+        # Set default parameters
+        self.default_parameters = {}
+
+        # Perform the base class object initialization
+        super().__init__(obj_name=obj_name, sub_analyses=sub_analyses, **kwargs)
+
+        # Set the default State for the variables
+        i_var = State(value=1.0, desc="i state value", source=self)
+
+        h_var = State(value=1.0, desc="h state value", source=self)
+
+        # Construct variables dictionary
+        self.variables = {"i": i_var, "h": h_var}
+
+        return
+
+    def _analyze(self):
+
+        # Extract the variable values
+        i = self.variables["i"].value
+
+        h = self.variables["h"].value
+
+        # Compute the output
+        c = i * h
+
+        # Update the analyzed attribute
+        self.analyzed = True
+
+        # Store the outputs
+        self.outputs = {}
+
+        self.outputs["c"] = State(value=c, desc="Constraint value", source=self)
+
+        return
+
+    def _analyze_adjoint(self):
+
+        # Extract the variable values
+        i = self.variables["i"].value
+
+        h = self.variables["h"].value
+
+        # Extract the variable derivatives
+        ib = self.variables["i"].deriv
+        hb = self.variables["h"].deriv
+
+        # Extract the output derivative
+        cb = self.outputs["c"].deriv
+
+        # Update xb and fb values
+        ib += cb * h
+
+        hb += cb * i
+
+        # Update the analyzed adjoint attribute
+        self.adjoint_analyzed = True
+
+        # Update the derivative values
+        self.variables["i"].set_deriv_value(ib)
+        self.variables["h"].set_deriv_value(hb)
 
         return
 
@@ -248,6 +433,12 @@ if __name__ == "__main__":
     w = 0.5
     multi = MultiObjective(obj_name="multi", sub_analyses=[term1, term2], w=w)
 
+    inter = Intermediate(obj_name="inter", sub_analyses=[term1])
+
+    inter2 = Intermediate2(obj_name="inter2", sub_analyses=[term2])
+
+    constraint = Constraint(obj_name="con", sub_analyses=[inter, inter2])
+
     # Test the isolated adjoints
     test_isolated_adjoints = False
     if test_isolated_adjoints:
@@ -260,22 +451,55 @@ if __name__ == "__main__":
         term2.declare_design_vars(variables=["y"])
         term2.test_isolated_adjoint(method="cs")
 
+        inter.declare_design_vars(variables=["f"])
+        inter.test_isolated_adjoint(method="cs")
+
+        inter2.declare_design_vars(variables=["g"])
+        inter2.test_isolated_adjoint(method="cs")
+
         multi.declare_design_vars(variables=["f", "g"])
         multi.test_isolated_adjoint(method="cs")
 
-    # Test the isolated adjoing for the system
-    first.declare_design_vars(variables=["x"])
-    multi.test_combined_adjoint(method="cs", debug_print=False)
+        constraint.declare_design_vars(variables=["h", "i"])
+        constraint.test_isolated_adjoint(method="cs")
+
+    # Test the combined adjoints
+    test_combined_adjoints = False
+    if test_combined_adjoints:
+        first.declare_design_vars(variables=["x"])
+        multi.test_combined_adjoint(method="fd", debug_print=False)
+
+        constraint.test_combined_adjoint(method="fd")
 
     # Create the flume system
     sys = System(
         sys_name="multiobj_test",
-        top_level_analysis_list=[multi],
+        top_level_analysis_list=[multi, constraint],
         log_prefix="examples/multi_objective",
     )
-
-    multi.analyze()
 
     # Graph the system
     graph = sys.graph_network(make_connections=False)
     graph.render("MultiObjective_SystemGraph", directory=sys.log_prefix, cleanup=True)
+
+    # Declare the objective and constraints
+    sys.declare_design_vars(global_var_name={"first.x": {"lb": -2.0, "ub": 2.0}})
+
+    sys.declare_objective(global_obj_name="multi.J")
+
+    sys.declare_constraints(
+        global_con_name={"con.c": {"rhs": 10.0, "direction": "leq"}}
+    )
+
+    interface = FlumeParOptInterface(flume_sys=sys)
+
+    # Construct the paropt problem for the Flume system
+    paroptprob = interface.construct_paropt_problem()
+    options = interface.get_paropt_default_options(
+        output_prefix="examples/multi_objective/test_paropt"
+    )
+
+    for i in range(5):
+        paroptprob.checkGradients(1e-6)
+
+    # multi.analyze()

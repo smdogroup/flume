@@ -438,7 +438,7 @@ class Analysis:
         else:
             raise ValueError("Analysis mode must be either 'real' or 'complex'.")
 
-    def _initialize_analysis(self, mode="real", prev_analyzed=None):
+    def _initialize_analysis(self, mode="real"):
         """
         Initializes the internal data for the analysis procedure contained within the object. Nominally, this simply sets an attribute called 'analyzed', which is a boolean that stores whether the analysis procedure has been performed. If other procedures are required for this function, the derived class should contain an instance of this method and then call super()._initialize_analysis() immediately before the return statement.
         """
@@ -446,24 +446,48 @@ class Analysis:
         # Set the data type based on the analysis mode
         self._set_data_type(mode=mode)
 
-        # Initialize the flag that specifies whether the analysis procedure has been performed
-        # NOTE: original implementation was just to set self.anayzed = False; need to come back and fully resolve this feature
+        # Modify the analyzed attribute for the current object, if necessary
         if not hasattr(self, "analyzed"):
-            # If the object does not have an analyzed attribute, it is set to be False, indicating that analysis must be performed
+            # If the object does not have an analyzed attribute, set it to False
             self.analyzed = False
 
-        elif self.analyzed and prev_analyzed:
-            self.analyzed = True
+        # If the object has any sub-analyses...
+        elif any(self.sub_analyses):
 
-        elif self.analyzed and prev_analyzed is None:
-            # This covers the case when the object is first in the stack, as prev_analyzed is None. If the object has already been analyzed, it does not get computed again. Otherwise, the system is analyzed.
+            # Loop through each sub analysis and extract its analyzed attribute
+            subs_analyzed = []
+            for sub in self.sub_analyses:
+                subs_analyzed.append(sub.analyzed)
 
-            self.analyzed = True
+            # If not all sub-analyses have been analyzed, set the current object's analyzed attribute to False (values will change from sub-analyses, so need to recompute this object)
+            if not all(subs_analyzed):
+                self.analyzed = False
 
+            # If all sub-analyses have been analyzed and the current object is already analyzed, keep analyzed the same (as True)
+            elif all(subs_analyzed) and self.analyzed:
+                self.analyzed = True
+
+            # If all sub-analyses have been analyzed but this object is not analyzed, keep analyzed the same (as False); this object needs to be analyzed
+            else:
+                self.analyzed = False
+
+        # If the object does not have any sub-analyses...
+        elif not any(self.sub_analyses):
+
+            # If it has been analyzed, keep the same (as True)
+            if self.analyzed:
+                self.analyzed = True
+            # If it has not been analyzed, keep the same (as False)
+            else:
+                self.analyzed = False
+
+        # Raise an error if this situation occurs, as there is a logic detection issue
         else:
-            self.analyzed = False
+            raise RuntimeError(
+                f"Unknown logic situation encountered for object named {self.obj_name} during analysis initialization!"
+            )
 
-        return self.analyzed
+        return
 
     def analyze(self, mode="real", debug_print=False):
         """
@@ -474,18 +498,19 @@ class Analysis:
         self.stack = self._make_stack()
 
         # Initialize the analyses for the items in the stack
-        prev_analyzed = None
+        init_seen = set()
         for analysis in self.stack:
-            initialize_start = time.time()
-            prev_analyzed = analysis._initialize_analysis(
-                mode=mode, prev_analyzed=prev_analyzed
-            )
-            initialize_end = time.time()
+            if analysis not in init_seen:
+                initialize_start = time.time()
+                analysis._initialize_analysis(mode=mode)
+                initialize_end = time.time()
 
-            if debug_print:
-                print(
-                    f"Initialized analysis for object named '{analysis.obj_name} in {(initialize_end - initialize_start):.4f}'."
-                )
+                if debug_print:
+                    print(
+                        f"Initialized analysis for object named '{analysis.obj_name} in {(initialize_end - initialize_start):.4f}'."
+                    )
+
+                init_seen.add(analysis)
 
         # Perform the analysis for each member in the stack
         self.forward_total = 0.0

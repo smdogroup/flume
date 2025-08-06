@@ -193,8 +193,6 @@ class FlumeParOptInterface:
             else:
                 x_i = x[start:end]
 
-            # ic(x_i)
-
             # Extract the local name of the variable
             local_name = self.flume_sys.design_vars_info[var]["local_name"]
 
@@ -237,7 +235,7 @@ class FlumeParOptInterface:
         self.set_system_variables(x, self.it_counter)
 
         # Perform the analysis for the objective function
-        self.flume_sys.obj_analysis.analyze()
+        self.flume_sys.obj_analysis.analyze(debug_print=False)
 
         # Extract the objective function output
         self.obj_name = self.flume_sys.obj_local_name
@@ -252,7 +250,7 @@ class FlumeParOptInterface:
         for con in self.flume_sys.con_info:
             # ic(con)
             # Perform the analysis for the current constraint function
-            self.flume_sys.con_info[con]["instance"].analyze()
+            self.flume_sys.con_info[con]["instance"].analyze(debug_print=False)
 
             # Extract the output for the constraint
             con_name = self.flume_sys.con_info[con]["local_name"]

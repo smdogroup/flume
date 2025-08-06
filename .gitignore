@@ -5,3 +5,5 @@ venv/
 flume.egg-info/
 flume_venv/
 *test_paropt/
+*.pdf
+*.log
