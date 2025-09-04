@@ -316,10 +316,6 @@ class FlumeParOptInterface:
         # Call the logger function
         self.flume_sys.log_information(iter_number=self.it_counter)
 
-        # Call the callback function, if it was provided
-        if self.callback is not None:
-            self.callback(x, self.it_counter)
-
         # Set the failure flag
         fail = 0
 
@@ -460,6 +456,10 @@ class FlumeParOptInterface:
 
         # Add the profiling information for the current iteration
         self.flume_sys.profile_iteration(self.it_counter - 1)
+
+        # Call the callback function, if it was provided
+        if self.callback is not None:
+            self.callback(x, self.it_counter - 1)
 
         return 0
 

@@ -92,14 +92,58 @@ class System:
 
         return full_analysis_list
 
-    def graph_network(self, make_connections=False):
+    def graph_network(
+        self,
+        filename: str = None,
+        output_directory: str = None,
+        interactive: bool = False,
+    ):
         """
         DOCS: goal here is to construct the directed acyclic graph using the information for each of the entries in the analyses_list
 
         make_connections will likely have to call analyze on the system to construct the connections object (since outputs do not exist by default)
         """
 
-        # Create the graph
+        # Create the graph, according to the interactive boolean argument
+        if interactive:
+            # Make the graph with graphviz in interactive mode
+            graph = self._static_graph_network()
+
+            # Render as an svg for interactive graph
+            int_filename = filename + "_interactive"
+            graph.render(
+                filename=int_filename,
+                directory=output_directory,
+                format="svg",
+                cleanup=True,
+            )
+
+            # Edit the SVG file to enable interactive features
+            svg_filepath = output_directory + "/" + int_filename + ".svg"
+            # ic(svg_filepath)
+
+            # FIXME: Rewriting this adds ns0 to the output, need to fix
+            self._enable_interactive_graph(svg_filepath=svg_filepath)
+
+            # Embed the interactive svg into an HTML with the interactive capabilities
+            self._create_interactive_html(
+                output_directory=output_directory, svg_filepath=svg_filepath
+            )
+
+        else:
+            # Make the graph with graphviz
+            graph = self._static_graph_network()
+
+            # Render the graph
+            graph.render(filename=filename, directory=output_directory, cleanup=True)
+
+        return graph
+
+    def _static_graph_network(self):
+        """
+        DOCS:
+        """
+
         # graph = nx.Graph()
         graph = gv.Digraph(
             name=f"{self.sys_name.upper()}",
@@ -183,6 +227,54 @@ class System:
                                 )
 
         return graph
+
+    def _enable_interactive_graph(self, svg_filepath):
+        """
+        DOCS:
+        """
+
+        # Import xml
+        import xml.etree.ElementTree as ET
+
+        # Parse the graph
+        ET.register_namespace("", "http://www.w3.org/2000/svg")
+        tree = ET.parse(svg_filepath)
+        root = tree.getroot()
+
+        # Set the id for the svg
+        root.set("id", "my-svg")
+
+        # Find node groups and edit
+        for g in root.iter("{http://www.w3.org/2000/svg}g"):
+            # Get the class type for the attribute
+            attrib_class = g.attrib["class"]
+            # print(attrib_class)
+
+            # Replace the classes for graphs/nodes
+            if attrib_class == "node":
+                g.set("class", "graph-node")
+
+            # title = g.find("{http://www.w3.org/2000/svg}title")
+            # print(g.attrib)
+            # g.get()
+            # print(g)
+            # print(title.text)
+
+        # Rewrite the file
+        tree.write(svg_filepath)
+
+        return
+
+    def _create_interactive_html(self, output_directory, svg_filepath):
+        """
+        DOCS:
+        """
+
+        from flume.base_classes.system_html import _write_html_file
+
+        _write_html_file(output_directory=output_directory, svg_filepath=svg_filepath)
+
+        return
 
     def _find_analysis_object(self, instance_name, var_name):
         """
