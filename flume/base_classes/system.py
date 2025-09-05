@@ -35,6 +35,9 @@ class System:
         self.log_name = log_name
         self.log_prefix = log_prefix
 
+        if not os.path.isdir(self.log_prefix):
+            os.mkdir(self.log_prefix)
+
         # Configure the file path for the log file
         self.outputs_log = Logger(log_path=self.log_prefix, log_name=self.log_name)
         self.profile_log = Logger(log_path=self.log_prefix, log_name="profile.log")
@@ -323,8 +326,8 @@ class System:
         global_con_name_dict : dict
             This is a dictionary of dictionaries. The keys correspond to the global output names for the constraints. The inner dictionary specifies additional information about the structure of the constriant, including the following:
 
-                'rhs' : float - specifies the right hand side of the constraint equation. Internally, this will convert the constraint to an equivalent form that normalizes it, preserving the specified inequality direction. If the 'rhs' value is 0.0, no scaling is applied
-                'direction' : str - default is assumed 'geq', which is >=, but the alternative is 'leq', <=
+            * 'rhs' (float) - specifies the right hand side of the constraint equation. Internally, this will convert the constraint to an equivalent form that normalizes it, preserving the specified inequality direction. If the 'rhs' value is 0.0, no scaling is applied
+            * 'direction' (str) - default is assumed 'geq', which is >=, but the alternative is 'leq', <=
 
 
         Example

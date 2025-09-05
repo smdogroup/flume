@@ -266,6 +266,10 @@ class FlumeParOptInterface:
                     rhs_val = self.flume_sys.con_info[con]["rhs"]
                     con_val = con_val / rhs_val - 1.0
 
+                # If the rhs is < 0, flip the sign for the constraint
+                if self.flume_sys.con_info[con]["rhs"] < 0.0:
+                    con_val *= -1.0
+
                 # Append the constraint value to the constraints list
                 con_list.append(con_val)
 
@@ -276,6 +280,10 @@ class FlumeParOptInterface:
                     con_val = 1.0 - con_val / rhs_val
                 else:
                     # This step is necessary only for 'leq' to convert constraint to proper form, c(x) >= 0.0
+                    con_val *= -1.0
+
+                # If the rhs is < 0, flip the sign for the constraint
+                if self.flume_sys.con_info[con]["rhs"] < 0.0:
                     con_val *= -1.0
 
                 # Append the constraint value to the constraints list
@@ -289,10 +297,18 @@ class FlumeParOptInterface:
                     # Greater than inequality part
                     con_val_geq = con_val / rhs_val - 1.0
 
+                    # If the rhs is < 0, flip the sign for the constraint
+                    if self.flume_sys.con_info[con]["rhs"] < 0.0:
+                        con_val_geq *= -1.0
+
                     con_list.append(con_val_geq)
 
                     # Less than inequality part
                     con_val_leq = 1.0 - con_val / rhs_val
+
+                    # If the rhs is < 0, flip the sign for the constraint
+                    if self.flume_sys.con_info[con]["rhs"] < 0.0:
+                        con_val_leq *= -1.0
 
                     con_list.append(con_val_leq)
                 else:
@@ -414,6 +430,9 @@ class FlumeParOptInterface:
                         rhs_val = self.flume_sys.con_info[con]["rhs"]
                         gradc_i /= rhs_val
 
+                    if self.flume_sys.con_info[con]["rhs"] < 0.0:
+                        gradc_i *= -1.0
+
                     A[con_index][start:end] = gradc_i
 
                 elif self.flume_sys.con_info[con]["direction"] == "leq":
@@ -422,6 +441,9 @@ class FlumeParOptInterface:
                         rhs_val = self.flume_sys.con_info[con]["rhs"]
                         gradc_i /= -rhs_val
                     else:
+                        gradc_i *= -1.0
+
+                    if self.flume_sys.con_info[con]["rhs"] < 0.0:
                         gradc_i *= -1.0
 
                     A[con_index][start:end] = gradc_i
@@ -434,6 +456,9 @@ class FlumeParOptInterface:
                         # Greater than inequality part
                         gradc_i_geq = gradc_i / rhs_val
 
+                        if self.flume_sys.con_info[con]["rhs"] < 0.0:
+                            gradc_i_geq *= -1.0
+
                         A[con_index][start:end] = gradc_i_geq
 
                         con_index += 1
@@ -441,9 +466,11 @@ class FlumeParOptInterface:
                         # Less than inequality part
                         gradc_i_leq = -gradc_i / rhs_val
 
+                        if self.flume_sys.con_info[con]["rhs"] < 0.0:
+                            gradc_i_leq *= -1.0
+
                         A[con_index][start:end] = gradc_i_leq
                     else:
-                        # Greater than inequality part
                         A[con_index][start:end] = gradc_i
 
                         con_index += 1
