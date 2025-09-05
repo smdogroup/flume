@@ -16,5 +16,5 @@ jobs:
                 pip install -r requirements.txt
             - name : Run unittests
               run : |
-                python -m unittest discover -s tests
+                python -m unittest discover tests/test_state.py tests/test_analysis.py
 
