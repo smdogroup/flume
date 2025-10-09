@@ -4,6 +4,7 @@ from icecream import ic
 from typing import List
 from flume.interfaces.utils import Logger
 import os
+import numpy as np
 
 
 class System:
@@ -102,9 +103,16 @@ class System:
         interactive: bool = False,
     ):
         """
-        DOCS: goal here is to construct the directed acyclic graph using the information for each of the entries in the analyses_list
+        Construct the visualization of the network associated with the Flume system using graphviz.
 
-        make_connections will likely have to call analyze on the system to construct the connections object (since outputs do not exist by default)
+        Parameters
+        ----------
+        filename : str
+            Name to use for the file that is created
+        output_directory : str
+            String that defines the directory where the file should be saved
+        interactive : bool
+            Boolean value that indicates whether the graph should be output in interactive mode. *This is an experimental feature at the moment*
         """
 
         # Create the graph, according to the interactive boolean argument
@@ -144,7 +152,7 @@ class System:
 
     def _static_graph_network(self):
         """
-        DOCS:
+        Private method that is used to greate the graphviz visual in static form, which is ultimately returned by this method.
         """
 
         # graph = nx.Graph()
@@ -233,7 +241,12 @@ class System:
 
     def _enable_interactive_graph(self, svg_filepath):
         """
-        DOCS:
+        Privat method that is used to enable interactive capabilities with the file provided with svg_filepath
+
+        Parameters
+        ----------
+        svg_filepath : str
+            String that provides a filepath to an SVG file, which will be modified to make it interactive
         """
 
         # Import xml
@@ -270,7 +283,14 @@ class System:
 
     def _create_interactive_html(self, output_directory, svg_filepath):
         """
-        DOCS:
+        Privat emethod that creates an interactive HTML using the file located at output_directory/svg_filepath
+
+        Parameters
+        ----------
+        output_directory : str
+            String that specifies the location of the output directory for the HTML
+        svg_filepath : str
+            String that specifies the location of the SVG file that is to be converted to interactive mode
         """
 
         from flume.base_classes.system_html import _write_html_file
@@ -481,8 +501,18 @@ class System:
 
     def log_information(self, iter_number):
         """
-        DOCS:
+        Helper function that is used to log the values for the objective function, constraints, and other functions of interest at each iteration. Internally, this will update the log file for the System with this information at every iteration.
+
+        Parameters
+        ----------
+        iter_number : int
+            Current iteration number
         """
+
+        # Check that the system has an FOI attribute, otherwise generate it (only needed if the user does not declare additional FOI to track)
+        if not hasattr(self, "foi"):
+            self.declare_foi(global_foi_name=[])
+
         # Log the header names if the current iter number is divisible by 10
         if iter_number % 10 == 0:
             # Log the header for the iter number and objective
@@ -491,12 +521,38 @@ class System:
 
             # Log the constraints
             for con in self.foi["cons"].keys():
-                con_header = f"con: {self.foi['cons'][con]['local_name']}"
-                self.outputs_log.log("%20s" % con_header, end="")
+                con_val = (
+                    self.foi["cons"][con]["instance"]
+                    .outputs[self.foi["cons"][con]["local_name"]]
+                    .value
+                )
+
+                if isinstance(con_val, np.ndarray):
+                    for i in range(con_val.size):
+                        con_header = f"con: {self.foi['cons'][con]['local_name']}[{i}]"
+                        self.outputs_log.log("%20s" % con_header, end="")
+
+                else:
+                    con_header = f"con: {self.foi['cons'][con]['local_name']}"
+                    self.outputs_log.log("%20s" % con_header, end="")
 
             # Log the other functions of interest
             for other in self.foi["other"].keys():
-                other_header = f"other: {self.foi['other'][other]['local_name']}"
+                other_val = (
+                    self.foi["other"][other]["instance"]
+                    .outputs[self.foi["other"][other]["local_name"]]
+                    .value
+                )
+
+                if isinstance(other_val, np.ndarray):
+                    for i in range(other_val.size):
+                        other_header = (
+                            f"other: {self.foi['other'][other]['local_name']}[{i}]"
+                        )
+                        self.outputs_log.log("%20s" % other_header, end="")
+
+                else:
+                    other_header = f"other: {self.foi['other'][other]['local_name']}"
                 self.outputs_log.log("%20s" % other_header, end="")
 
         # Log the values for the current iteration and objective value
@@ -514,10 +570,17 @@ class System:
                 .value
             )
 
-            if not isinstance(con_val, str):
-                con_val = "%20.10e" % con_val
+            if isinstance(con_val, np.ndarray):
+                for i in range(con_val.size):
+                    if not isinstance(con_val[i], str):
+                        con_val_i = "%20.10e" % con_val[i]
+                    self.outputs_log.log("%20s" % con_val_i, end="")
 
-            self.outputs_log.log("%20s" % con_val, end="")
+            else:
+                if not isinstance(con_val, str):
+                    con_val = "%20.10e" % con_val
+
+                self.outputs_log.log("%20s" % con_val, end="")
 
         # Log the values for the other FOI
         for other in self.foi["other"].keys():
@@ -527,16 +590,33 @@ class System:
                 .value
             )
 
-            if not isinstance(other_val, str):
-                other_val = "%20.10e" % other_val
+            if isinstance(other_val, np.ndarray):
+                for i in range(other_val.size):
+                    if not isinstance(other_val[i], str):
+                        other_val_i = "%20.10e" % other_val[i]
+                    self.outputs_log.log("%20s" % other_val_i, end="")
 
-            self.outputs_log.log("%20s" % other_val, end="")
+            else:
+                if not isinstance(other_val, str):
+                    other_val = "%20.10e" % other_val
+
+                self.outputs_log.log("%20s" % other_val, end="")
+
+            # if not isinstance(other_val, str):
+            #     other_val = "%20.10e" % other_val
+
+            # self.outputs_log.log("%20s" % other_val, end="")
 
         return
 
     def profile_iteration(self, iter_number):
         """
-        DOCS:
+        Helper function that is used to display the time taken for each analyze and analyze_adjoint method at the current iteration. Internally, this updates a profile log file that stores the timing information for the System at each iteration.
+
+        Parameters
+        ----------
+        iter_number : int
+            Current iteration number
         """
 
         # Log the analysis object names if the current iteration number is divisible by 10
