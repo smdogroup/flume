@@ -32,6 +32,8 @@ class State:
         # Set the source for the variable
         if source is not None:
             self.source = source
+        else:
+            raise RuntimeError("Argument 'source' was not set!")
 
     def set_deriv_value(self, deriv_val):
         """

@@ -7,3 +7,4 @@ flume_venv/
 *test_paropt/
 *.pdf
 *.log
+tests/rosenbrock_*/

@@ -13,10 +13,10 @@ class TestStateConstruction(unittest.TestCase):
         Sets up the sample State object that is used for the subsequent tests.
         """
 
-        self.scalar_state = State(value=2.0, desc="Scalar state")
+        self.scalar_state = State(value=2.0, desc="Scalar state", source=self)
 
         val = np.array([1.0, 2.0, 3.0])
-        self.vec_state = State(value=val, desc="Vector state")
+        self.vec_state = State(value=val, desc="Vector state", source=self)
 
         return
 
