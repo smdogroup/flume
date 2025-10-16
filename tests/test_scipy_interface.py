@@ -8,7 +8,7 @@ from examples.rosenbrock.rosenbrock_problem_classes import (
     RosenbrockConstraint,
     RosenbrockDVs,
 )
-from tests.thomson_problem import (
+from examples.thomson_problem.thomson_problem_classes import (
     ParticlePositions,
     ParticleConstraints,
     PotentialEnergy,
@@ -150,8 +150,6 @@ class TestConstrainedRosenbrock(unittest.TestCase):
         # Optimize the problem with SciPy minimize
         x, res = interface.optimize_system(x0=x0, method="SLSQP")
 
-        ic(res)
-
         # Set the expected optimal values
         xstar = np.array([0.786, 0.618])
 
@@ -227,7 +225,7 @@ class TestThomsonProblem(unittest.TestCase):
             initial_global_vars=init_global_vars
         )
 
-        # Optimize the problem with SciPy minimize (SLSQP does not work with this implementation because the subproblem is singular, so use COBYQA instead)
+        # Optimize the problem with SciPy minimize (SLSQP does not work with this implementation because the subproblem is singular)
         x, res = interface.optimize_system(
             x0=initial_point, method="trust-constr", maxit=maxit
         )
@@ -236,44 +234,6 @@ class TestThomsonProblem(unittest.TestCase):
         obj_val = res.fun
 
         return obj_val
-
-    def test_optimization_2np(self):
-        """
-        Tests that the solution for the thomson problem with N particles matches the expected solution.
-        """
-
-        # Construct the system
-        n_p = 2
-        flume_sys = self.construct_system(n_p=n_p)
-
-        # Construct the Scipy interface
-        interface = FlumeScipyInterface(flume_sys=flume_sys)
-
-        # Set random positions for x, y, z to start
-        theta0 = np.random.uniform(size=n_p)
-        phi0 = np.random.uniform(size=n_p)
-
-        # Set the initial guess using theta0 and phi0
-        init_global_vars = {"positions.theta": theta0, "positions.phi": phi0}
-        initial_point = interface.set_initial_point(
-            initial_global_vars=init_global_vars
-        )
-
-        # Optimize the problem with SciPy minimize (SLSQP does not work with this implementation because the subproblem is singular, so use COBYQA instead)
-        x, res = interface.optimize_system(x0=initial_point, method="trust-constr")
-
-        # Check that the potential energy at the final point matches the expected value
-        obj_val = res.fun
-        obj_star = 0.5
-
-        self.assertAlmostEqual(
-            first=obj_val,
-            second=obj_star,
-            places=4,
-            msg="The optimal value of the objective function does not match the expected value for 2 particles.",
-        )
-
-        return
 
     def test_optimization_2np(self):
         """

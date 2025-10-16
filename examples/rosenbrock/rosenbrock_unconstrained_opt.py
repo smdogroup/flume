@@ -107,5 +107,5 @@ if __name__ == "__main__":
     yerr = (ystar - x[1]) / ystar
 
     print("\n%15s %15s %15s %15s" % ("Variable", "Expected", "Computed", "Error"))
-    print("\n%15s %15s %15s %15s" % ("x", xstar, x[0], xerr))
-    print("\n%15s %15s %15s %15s" % ("y", ystar, x[1], yerr))
+    print("%15s %15s %15s %15s" % ("x", xstar, x[0], xerr))
+    print("%15s %15s %15s %15s" % ("y", ystar, x[1], yerr))
