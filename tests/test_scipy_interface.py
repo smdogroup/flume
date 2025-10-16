@@ -3,7 +3,7 @@ from flume.interfaces.scipy_interface import FlumeScipyInterface
 from icecream import ic
 import numpy as np
 import unittest
-from tests.rosenbrock_problem_classes import (
+from examples.rosenbrock.rosenbrock_problem_classes import (
     Rosenbrock,
     RosenbrockConstraint,
     RosenbrockDVs,
@@ -149,6 +149,8 @@ class TestConstrainedRosenbrock(unittest.TestCase):
 
         # Optimize the problem with SciPy minimize
         x, res = interface.optimize_system(x0=x0, method="SLSQP")
+
+        ic(res)
 
         # Set the expected optimal values
         xstar = np.array([0.786, 0.618])

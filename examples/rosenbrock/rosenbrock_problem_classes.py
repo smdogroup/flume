@@ -6,6 +6,25 @@ from icecream import ic
 class Rosenbrock(Analysis):
 
     def __init__(self, obj_name: str, sub_analyses=[], **kwargs):
+        """
+        Analysis class that computes the value of the Rosenbrock function.
+
+        f(x,y) = (a - x) ** 2 + b * (y - x ** 2) ** 2
+
+        Parameters
+        ----------
+        obj_name : str
+            Name for the analysis object
+        sub_analyses : list
+            A list of sub-analyses for the object
+
+        Keyword Arguments
+        -----------------
+        a : float
+            Value for the 'a' parameter in the Rosenbrock function
+        b : float
+            Value for the 'b' parameter in the Rosenbrock function
+        """
 
         # Set the default parameters
         self.default_parameters = {"a": 1.0, "b": 100.0}
@@ -23,6 +42,10 @@ class Rosenbrock(Analysis):
         return
 
     def _analyze(self):
+        """
+        Computes the value of the Rosenbrock function
+        """
+
         # Extract the variable values
         x = self.variables["x"].value
         y = self.variables["y"].value
@@ -47,6 +70,10 @@ class Rosenbrock(Analysis):
         return
 
     def _analyze_adjoint(self):
+        """
+        Computes the derivatives for the Rosenbrock function using the adjoint method.
+        """
+
         # Extract the derivatives of the outputs
         fb = self.outputs["f"].deriv
 
@@ -80,6 +107,21 @@ class Rosenbrock(Analysis):
 
 class RosenbrockDVs(Analysis):
     def __init__(self, obj_name: str, sub_analyses=[], **kwargs):
+        """
+        Analysis class that defines the design variables for the Rosenbrock function. This is needed to define single values for x and y that can be treated as design variables, which are then distributed throughout the System (i.e. to the objective and constriant functions).
+
+        Parameters
+        ----------
+        obj_name : str
+            Name for the analysis object
+        sub_analyses : list
+            A list of sub-analyses for the object
+
+        Keyword Arguments
+        -----------------
+        No input parameters for this object, so no **kwargs.
+        """
+
         # Set the default parameters
         self.default_parameters = {}
 
@@ -100,6 +142,9 @@ class RosenbrockDVs(Analysis):
         return
 
     def _analyze(self):
+        """
+        Maps x_dv, y_dv -> x, y, where x, y are then distributed throughout the System.
+        """
 
         # Extract the variables
         x_dv = self.variables["x_dv"].value
@@ -118,6 +163,9 @@ class RosenbrockDVs(Analysis):
         return
 
     def _analyze_adjoint(self):
+        """
+        Propagates the derivatives for x and y back to the design variables x_dv and y_dv
+        """
 
         # Extract the output derivatives
         xb = self.outputs["x"].deriv
@@ -144,6 +192,21 @@ class RosenbrockDVs(Analysis):
 
 class RosenbrockConstraint(Analysis):
     def __init__(self, obj_name: str, sub_analyses=[RosenbrockDVs], **kwargs):
+        """
+        Analysis class that computes the value of the constraint function, which is used to constraint the design space to a circular region.
+
+        Parameters
+        ----------
+        obj_name : str
+            Name for the analysis object
+        sub_analyses : list
+            A list of sub-analyses for the object, which nominally contains an instance of the RosenbrockDVs class
+
+        Keyword Arguments
+        -----------------
+        No input parameters for this object, so no **kwargs.
+        """
+
         # Set the default parameters
         self.default_parameters = {}
 
@@ -160,13 +223,16 @@ class RosenbrockConstraint(Analysis):
         return
 
     def _analyze(self):
+        """
+        Computes the distance from the origin for the current values of x and y.
+        """
 
         # Extract the variable values
         x = self.variables["x"].value
         y = self.variables["y"].value
 
-        # Compute the value of the constraint (negative sign is used to test constraints that have a negative rhs)
-        g = x**2 + y**2  # * -1.0
+        # Compute the value of the constraint
+        g = x**2 + y**2
 
         # Update the analyzed attribute
         self.analyzed = True
@@ -176,13 +242,16 @@ class RosenbrockConstraint(Analysis):
 
         self.outputs["g"] = State(
             value=g,
-            desc="Constraint value that constraints the design space to a circle",
+            desc="Distance from the origin, which is used to constrain the design space to a circle",
             source=self,
         )
 
         return
 
     def _analyze_adjoint(self):
+        """
+        Performs the adjoint analysis for the constraint function to propagate the derivatives back to x and y.
+        """
 
         # Extract the variable values
         x = self.variables["x"].value

@@ -2,7 +2,7 @@ from flume.base_classes.system import System
 from icecream import ic
 import numpy as np
 import unittest
-from tests.rosenbrock_problem_classes import (
+from examples.rosenbrock.rosenbrock_problem_classes import (
     Rosenbrock,
     RosenbrockConstraint,
     RosenbrockDVs,
