@@ -1,105 +1,19 @@
-from flume.base_classes.analysis import Analysis
-from flume.base_classes.state import State
+# Description: this defines the run script that combines the individual Flume Analysis classes, located within the other files in this directory, into a System. The FlumeScipyInterface is utilized to perform the optimization, as well.
+
+from flume.base_classes.system import System
 from examples.hohmann_transfer.vcirc import VCircAnalysis
 from examples.hohmann_transfer.transfer_orbit import TransferOrbitAnalysis
 from examples.hohmann_transfer.delta_v import DeltaVAnalysis
 import numpy as np
-
-
-class HohmannLEOtoGEO:
-    """
-    Class that combines the different analyses needed to perform an analysis of a Hohmann transfer from LEO go GEO.
-    """
-
-    def __init__(
-        self,
-        leo: VCircAnalysis,
-        geo: VCircAnalysis,
-        transfer: TransferOrbitAnalysis,
-        dv1: DeltaVAnalysis,
-        dv2: DeltaVAnalysis,
-    ):
-        """
-        Class that combines analyses to perform Hohmann transfer analysis from LEO to GEO.
-
-        Parameters
-        ----------
-        leo : VCircAnalysis
-            Instance of VCircAnalysis that defines the LEO orbit
-        geo : VCircAnalysis
-            Instance of VCircAnalysis that defines the GEO orbit
-        transfer : TransferOrbitAnalysis
-            Instance of TransferOrbitAnalysis that defines the parameters for the transfer orbit between the two circular orbits.
-        dv1 : DeltaVAanlysis
-            Instance of DeltaVAnalysis that computes the first velocity change required based on velocity and inclination data
-        dv2 : DeltaVAanlysis
-            Instance of DeltaVAnalysis that computes the second velocity change required based on velocity and inclination data
-        """
-
-        # Store the different objects as attributes
-        self.leo = leo
-        self.geo = geo
-        self.transfer = transfer
-        self.dv1 = dv1
-        self.dv2 = dv2
-
-        return
-
-    def perform_hohmann(self):
-        """
-        Performs the Hohmann transfer analysis with input objects.
-
-        Returns
-        -------
-        delta_v_total : float
-            Total velocity change (km/s) required for the Hohmann transfer (sum of the delta v's for the two maneuvers)
-        dinc_tot : float
-            Total inclination change (rad) for the Hohmann transfer (sum of the individual inclination changes for the two manuevers)
-        """
-
-        # Analyze the LEO and GEO circular orbits
-        self.leo.analyze()
-        self.geo.analyze()
-
-        # Perform the transfer orbit analysis
-        self.transfer.analyze()
-
-        # Extract the outputs from each of the analyses
-        leo_outs = self.leo.get_output_values()
-        geo_outs = self.geo.get_output_values()
-        transfer_outs = self.transfer.get_output_values()
-
-        # Set the variable values for the first delta_v analysis (i.e. LEO to transfer)
-        self.dv1.set_var_values(
-            variables={"v1": leo_outs["v_c"], "v2": transfer_outs["vp"]}
-        )
-
-        # Set the variable values for the second delta_v analysis (i.e. transfer to GEO)
-        self.dv2.set_var_values(
-            variables={"v1": transfer_outs["va"], "v2": geo_outs["v_c"]}
-        )
-
-        # Analyze the two delta_v analyses
-        self.dv1.analyze()
-        self.dv2.analyze()
-
-        # Extract the delta_v values from the two analyses
-        dv1_outs = self.dv1.get_output_values()
-        delta_v1 = dv1_outs["delta_v"]
-
-        dv2_outs = self.dv2.get_output_values()
-        delta_v2 = dv2_outs["delta_v"]
-
-        # Compute the total delta_v
-        delta_v_total = delta_v1 + delta_v2
-
-        # Compute the total inclination change
-        dinc_tot = self.dv1.variables["dinc"].value + self.dv2.variables["dinc"].value
-
-        return delta_v_total, dinc_tot
+from .total_delta_v import TotalDeltaV
+from .inclination_change import TotalInclinationChange
+from .independents import Independents
+from flume.interfaces.scipy_interface import FlumeScipyInterface
+from icecream import ic
 
 
 if __name__ == "__main__":
+
     # Define the inputs for the system
     mu = 398600.4418
     r1 = 6778.0
@@ -107,27 +21,116 @@ if __name__ == "__main__":
     dinc1 = 0.0
     dinc2 = 28.5 * np.pi / 180
 
-    # Create the analysis objects for the various parts of the Hohmann transfer maneuver
-    leo = VCircAnalysis(obj_name="leo")
-    leo.set_var_values(variables={"mu": mu, "r": r1})
+    # Construct the various analysis objects
+    indeps = Independents(obj_name="indeps")
+    indeps.set_var_values(
+        variables={
+            "mu_dv": mu,
+            "r1_dv": r1,
+            "r2_dv": r2,
+            "dinc1_dv": dinc1,
+            "dinc2_dv": dinc2,
+        }
+    )
 
-    geo = VCircAnalysis(obj_name="geo")
-    geo.set_var_values(variables={"mu": mu, "r": r2})
+    leo = VCircAnalysis(
+        obj_name="leo",
+        sub_analyses=[indeps],
+        variable_aliases={"r": "r1", "mu": "mu"},
+        output_aliases={"v_c": "v_cl"},
+    )
 
-    transfer = TransferOrbitAnalysis(obj_name="transfer", mu=mu)
-    transfer.set_var_values(variables={"ra": r2, "rp": r1})
+    geo = VCircAnalysis(
+        obj_name="geo",
+        sub_analyses=[indeps],
+        variable_aliases={"r": "r2", "mu": "mu"},
+        output_aliases={"v_c": "v_cg"},
+    )
 
-    dv1 = DeltaVAnalysis(obj_name="dv1")
-    dv1.set_var_values(variables={"dinc": dinc1})
+    transfer = TransferOrbitAnalysis(
+        obj_name="transfer",
+        sub_analyses=[indeps],
+        variable_aliases={"ra": "r2", "rp": "r1", "mu": "mu"},
+    )
 
-    dv2 = DeltaVAnalysis(obj_name="dv2")
-    dv2.set_var_values(variables={"dinc": dinc2})
+    dv1 = DeltaVAnalysis(
+        obj_name="dv1",
+        sub_analyses=[indeps, leo, transfer],
+        variable_aliases={"v1": "v_cl", "v2": "vp", "dinc": "dinc1"},
+        output_aliases={"delta_v": "delta_v1"},
+    )
 
-    # Construct the HohmannLEOtoGEO system
-    hohmann = HohmannLEOtoGEO(leo=leo, geo=geo, transfer=transfer, dv1=dv1, dv2=dv2)
+    dv2 = DeltaVAnalysis(
+        obj_name="dv2",
+        sub_analyses=[indeps, geo, transfer],
+        variable_aliases={"v1": "va", "v2": "v_cg", "dinc": "dinc2"},
+        output_aliases={"delta_v": "delta_v2"},
+    )
 
-    # Perform the Hohmann transfer analysis
-    dv_tot, dinc_tot = hohmann.perform_hohmann()
+    obj = TotalDeltaV(obj_name="dv_tot", sub_analyses=[dv1, dv2])
 
-    print("Delta-V (km/s):", dv_tot)
+    # To test the combined adjoint for the objective function, uncomment the following lines
+    # indeps.declare_design_vars(variables=["dinc1_dv", "dinc2_dv"])
+    # obj.test_combined_adjoint(method="cs")
+
+    con = TotalInclinationChange(obj_name="dinc_tot", sub_analyses=[indeps])
+
+    # To test the combined adjoint for the constraint function, uncomment the following lines
+    # indeps.declare_design_vars(variables=["dinc1_dv", "dinc2_dv"])
+    # con.test_combined_adjoint(method="cs")
+
+    # Setup the Flume system
+    sys = System(
+        sys_name="Hohmann_Transfer",
+        top_level_analysis_list=[obj, con],
+        log_name="flume.log",
+        log_prefix="examples/hohmann_transfer",
+    )
+
+    # Graph the network defined by the System and save to the output directory, which is used to visualize the structure of the System
+    graph = sys.graph_network(
+        filename="HohmannSystem", output_directory="examples/hohmann_transfer"
+    )
+
+    # Declare the objective function value
+    sys.declare_objective(global_obj_name="dv_tot.delta_v_tot")
+
+    # Declare the equality constraint for the total inclination change
+    sys.declare_constraints(
+        global_con_name={
+            "dinc_tot.dinc_tot": {"direction": "both", "rhs": 28.5 * np.pi / 180}
+        }
+    )
+
+    # Declare the design variables for the System
+    sys.declare_design_vars(
+        global_var_name={
+            "indeps.dinc1_dv": {"lower": 0.0, "upper": 28.5 * np.pi / 180},
+            "indeps.dinc2_dv": {"lower": 0.0, "upper": 28.5 * np.pi / 180},
+        }
+    )
+
+    # Construct the FlumeScipyInterface
+    interface = FlumeScipyInterface(flume_sys=sys)
+
+    # Set the initial point for the optimizer
+    x0 = interface.set_initial_point(
+        initial_global_vars={
+            "indeps.dinc1_dv": 0.0 * np.pi / 180,
+            "indeps.dinc2_dv": 28.5 * np.pi / 180,
+        }
+    )
+
+    # Optimize the system and print the results
+    xstar, res = interface.optimize_system(x0=x0, maxit=100)
+
+    ic(res)
+    ic(xstar * 180 / np.pi)
+
+    obj_outs = obj.get_output_values(outputs=["delta_v_tot"])
+    dv_tot = obj_outs["delta_v_tot"]
+    con_outs = con.get_output_values(outputs=["dinc_tot"])
+    dinc_tot = con_outs["dinc_tot"]
+
+    print("\nTotal Delta-V (km/s):", dv_tot)
     print("Inclination change split (deg):", dinc_tot * 180 / np.pi)

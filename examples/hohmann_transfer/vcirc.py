@@ -1,7 +1,8 @@
-# from base_classes.analysis_base import AnalysisBase
 from flume.base_classes.analysis import Analysis
 from flume.base_classes.state import State
 import numpy as np
+from .independents import Independents
+from typing import List
 
 
 class VCircAnalysis(Analysis):
@@ -9,7 +10,14 @@ class VCircAnalysis(Analysis):
     Analysis class that computes the velcity associated with the circular orbit defined by the input radius and graviational parameter.
     """
 
-    def __init__(self, obj_name: str, sub_analyses=[], **kwargs):
+    def __init__(
+        self,
+        obj_name: str,
+        sub_analyses=List[Independents],
+        variable_aliases=None,
+        output_aliases=None,
+        **kwargs
+    ):
         """
         Analysis class for computing change in velocity of two orbits.
 
@@ -18,7 +26,11 @@ class VCircAnalysis(Analysis):
         obj_name : str
             Name for the analysis object
         sub_analyses : list
-            A list of any sub-analyses for the DeltaV analysis (nominally, this is empty)
+            A list of any sub-analyses for the VCircAnalysis, which nominally contains an instance of the Independents class
+        variable_aliases : dict
+            Optional argument that, when provided, renames the variable names from their default values. If provided, the user must provide key-value pairs for all variables, where the keys are the default names and the values are the updated variable names
+        output_aliases : dict
+            Optional argument that, when provided, renames the output names from their default values. If provided, the user must provide key-value pairs for all outputs, where the keys are the default names and the values are the updated output names
 
         Keyword Arguments
         -----------------
@@ -27,6 +39,10 @@ class VCircAnalysis(Analysis):
 
         # Set the default parameters for the object
         self.default_parameters = {}
+
+        # Store the variable/output aliases
+        self.var_aliases = variable_aliases
+        self.output_aliases = output_aliases
 
         # Perform the base class object initialization
         super().__init__(obj_name=obj_name, sub_analyses=sub_analyses, **kwargs)
@@ -41,15 +57,29 @@ class VCircAnalysis(Analysis):
         )
 
         # Construct the variables dictionary
-        self.variables = {"r": r_var, "mu": mu_var}
+        if self.var_aliases is not None:
+            r_name = self.var_aliases["r"]
+            mu_name = self.var_aliases["mu"]
+
+            self.variables = {r_name: r_var, mu_name: mu_var}
+
+        else:
+            self.variables = {"r": r_var, "mu": mu_var}
 
     def _analyze(self):
         """
         Private analysis method for the object that computes all of the outputs with the provided input variables and parameters to the object.
         """
 
+        if self.var_aliases is not None:
+            r = self.variables[self.var_aliases["r"]].value
+            mu = self.variables[self.var_aliases["mu"]].value
+        else:
+            r = self.variables["r"].value
+            mu = self.variables["mu"].value
+
         # Compute the circular velocity for the orbit
-        v_c = np.sqrt(self.variables["mu"].value / self.variables["r"].value)
+        v_c = np.sqrt(mu / r)
 
         # Update the attribute to reflect that the object has been analyzed
         self.analyzed = True
@@ -57,11 +87,19 @@ class VCircAnalysis(Analysis):
         # Assign the outputs to the outputs dictionary
         self.outputs = {}
 
-        self.outputs["v_c"] = State(
-            value=v_c,
-            desc="Circular orbit velocity for the given radius and gravitational parameter (km/s)",
-            source=self,
-        )
+        if self.output_aliases is not None:
+            self.outputs[self.output_aliases["v_c"]] = State(
+                value=v_c,
+                desc="Circular orbit velocity for the given radius and gravitational parameter (km/s)",
+                source=self,
+            )
+
+        else:
+            self.outputs["v_c"] = State(
+                value=v_c,
+                desc="Circular orbit velocity for the given radius and gravitational parameter (km/s)",
+                source=self,
+            )
 
         return
 
@@ -71,28 +109,39 @@ class VCircAnalysis(Analysis):
         """
 
         # Extract the derivative values for the outputs
-        v_cb = self.outputs["v_c"].deriv
+        if self.output_aliases is not None:
+            v_cb = self.outputs[self.output_aliases["v_c"]].deriv
+        else:
+            v_cb = self.outputs["v_c"].deriv
+
+        # Extract the variable values/derivatives
+        if self.var_aliases is not None:
+            r = self.variables[self.var_aliases["r"]].value
+            mu = self.variables[self.var_aliases["mu"]].value
+
+            rb = self.variables[self.var_aliases["r"]].deriv
+            mub = self.variables[self.var_aliases["mu"]].deriv
+
+        else:
+            r = self.variables["r"].value
+            mu = self.variables["mu"].value
+
+            rb = self.variables["r"].deriv
+            mub = self.variables["mu"].deriv
 
         # Compute the derivative contribution to r from v_c
-        rb = (
-            v_cb
-            * 0.5
-            * (self.variables["mu"].value / self.variables["r"].value) ** (-1 / 2)
-            * -self.variables["mu"].value
-            / self.variables["r"].value ** 2
-        )
+        rb += v_cb * 0.5 * (mu / r) ** (-1 / 2) * -mu / r**2
 
         # Compute the derivative contribution to mu from v_c
-        mub = (
-            v_cb
-            * 0.5
-            * (self.variables["mu"].value / self.variables["r"].value) ** (-1 / 2)
-            / self.variables["r"].value
-        )
+        mub += v_cb * 0.5 * (mu / r) ** (-1 / 2) / r
 
         # Set the derivative values for the variables
-        self.variables["r"].set_deriv_value(deriv_val=rb)
-        self.variables["mu"].set_deriv_value(deriv_val=mub)
+        if self.var_aliases is not None:
+            self.variables[self.var_aliases["r"]].set_deriv_value(deriv_val=rb)
+            self.variables[self.var_aliases["mu"]].set_deriv_value(deriv_val=mub)
+        else:
+            self.variables["r"].set_deriv_value(deriv_val=rb)
+            self.variables["mu"].set_deriv_value(deriv_val=mub)
 
         # Update the attribute for the adjoint analysis
         self.adjoint_analyzed = True
