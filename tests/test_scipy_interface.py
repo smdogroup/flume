@@ -92,8 +92,6 @@ class TestConstrainedRosenbrock(unittest.TestCase):
         # Construct the design variables object
         rosenbrock_dvs = RosenbrockDVs(obj_name="dvs", sub_analyses=[])
 
-        rosenbrock_dvs.set_var_values(variables={"x_dv": 0.0, "y_dv": 0.0})
-
         # Construct the analysis object for the Rosenbrock function
         a = 1.0
         b = 100.0

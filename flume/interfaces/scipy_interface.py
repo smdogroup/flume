@@ -643,15 +643,19 @@ class FlumeScipyInterface:
 
         # Set the callback function to the user-defined function, if provided
         if self.callback is not None:
-            callback = callback
+            callback = self.callback
         # Otherwise, use the default callback functions
         else:
             if method == "trust-constr":
                 callback = self._callback_func_trust_constr
-                hess = SR1()
             else:
                 callback = self._callback_func
-                hess = "None"
+
+        # Set the value for the Hessian information
+        if method == "trust-constr":
+            hess = SR1()
+        else:
+            hess = "None"
 
         # Call the minimize function for the system
         res = minimize(
