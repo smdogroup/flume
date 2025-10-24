@@ -9,11 +9,11 @@ description = "A framework for performing forward and derivative analyses for sy
 readme = "README.md"
 authors = [{ name = "Cameron Smith", email = "csmith763@gatech.edu" }]
 
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
 [project.scripts]
 plot_flume_log = "flume.utils.plot_flume_log:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}
