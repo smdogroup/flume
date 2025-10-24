@@ -32,10 +32,11 @@ jobs:
           conda install mamba=1.5.10 -c conda-forge
           conda install libmamba -c conda-forge
           pip install -r docs/source/requirements.txt
-          cd ../
           echo $PWD
           conda --version
-          sphinx-build -M html "docs/source" "docs/build"
+          cd docs
+          echo $PWD
+          sphinx-build -b html -n . build/html
 
       # - name: Upload artifact
       #   uses: actions/upload-pages-artifact@v3
