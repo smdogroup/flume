@@ -1,0 +1,516 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Base Class Reference &mdash; Flume  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Interfaces Reference" href="interface_reference.html" />
+    <link rel="prev" title="Useful Methods Demonstration for Analysis Instances" href="analysis_methods_demo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Flume
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="flume_overview.html"><em>Flume</em> Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis_methods_demo.html">Useful Methods Demonstration for <em>Analysis</em> Instances</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Base Class Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#flume.base_classes.analysis.Analysis"><code class="docutils literal notranslate"><span class="pre">Analysis</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.__init__"><code class="docutils literal notranslate"><span class="pre">Analysis.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.analyze"><code class="docutils literal notranslate"><span class="pre">Analysis.analyze()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.analyze_adjoint"><code class="docutils literal notranslate"><span class="pre">Analysis.analyze_adjoint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.declare_design_vars"><code class="docutils literal notranslate"><span class="pre">Analysis.declare_design_vars()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.get_global_name"><code class="docutils literal notranslate"><span class="pre">Analysis.get_global_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.get_output_metadata"><code class="docutils literal notranslate"><span class="pre">Analysis.get_output_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.get_output_values"><code class="docutils literal notranslate"><span class="pre">Analysis.get_output_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.get_parameter_values"><code class="docutils literal notranslate"><span class="pre">Analysis.get_parameter_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.get_var_derivs"><code class="docutils literal notranslate"><span class="pre">Analysis.get_var_derivs()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.get_var_metadata"><code class="docutils literal notranslate"><span class="pre">Analysis.get_var_metadata()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.get_var_values"><code class="docutils literal notranslate"><span class="pre">Analysis.get_var_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.set_var_values"><code class="docutils literal notranslate"><span class="pre">Analysis.set_var_values()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.test_combined_adjoint"><code class="docutils literal notranslate"><span class="pre">Analysis.test_combined_adjoint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.analysis.Analysis.test_isolated_adjoint"><code class="docutils literal notranslate"><span class="pre">Analysis.test_isolated_adjoint()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flume.base_classes.state.State"><code class="docutils literal notranslate"><span class="pre">State</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.state.State.__init__"><code class="docutils literal notranslate"><span class="pre">State.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.state.State.set_deriv_value"><code class="docutils literal notranslate"><span class="pre">State.set_deriv_value()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#flume.base_classes.system.System"><code class="docutils literal notranslate"><span class="pre">System</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.__init__"><code class="docutils literal notranslate"><span class="pre">System.__init__()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.assemble_full_analysis_list"><code class="docutils literal notranslate"><span class="pre">System.assemble_full_analysis_list()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.declare_constraints"><code class="docutils literal notranslate"><span class="pre">System.declare_constraints()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.declare_design_vars"><code class="docutils literal notranslate"><span class="pre">System.declare_design_vars()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.declare_foi"><code class="docutils literal notranslate"><span class="pre">System.declare_foi()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.declare_objective"><code class="docutils literal notranslate"><span class="pre">System.declare_objective()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.graph_network"><code class="docutils literal notranslate"><span class="pre">System.graph_network()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.log_information"><code class="docutils literal notranslate"><span class="pre">System.log_information()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.profile_iteration"><code class="docutils literal notranslate"><span class="pre">System.profile_iteration()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#flume.base_classes.system.System.reset_analysis_flags"><code class="docutils literal notranslate"><span class="pre">System.reset_analysis_flags()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="interface_reference.html">Interfaces Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Flume</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Base Class Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/base_class_reference.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="base-class-reference">
+<h1>Base Class Reference<a class="headerlink" href="#base-class-reference" title="Link to this heading"></a></h1>
+<p>This page outlines the three base classes for <em>Flume</em>: <em>Analysis</em>, <em>State</em>, and <em>System</em>.</p>
+<dl class="py class" id="module-flume.base_classes.analysis">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flume.base_classes.analysis.</span></span><span class="sig-name descname"><span class="pre">Analysis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_analyses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.analysis.Analysis" title="Link to this definition"></a></dt>
+<dd><p>This is a base class for all derived analysis classes that establishes a set of common methods. For the variables and outputs that are stored as attributes of the class, data is stored in dictionaries with key-value pairs structured as “variable/output name” : State object that describes the variable/output.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub_analyses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.analyze">
+<span class="sig-name descname"><span class="pre">analyze</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'real'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_print</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.analyze" title="Link to this definition"></a></dt>
+<dd><p>Performs the analysis procedure for the object after combining the objects into a list that contains the stack. For each analysis in the stack, connections are established between sub-analyses and primary-analyses and then the private _analyze method is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.analyze_adjoint">
+<span class="sig-name descname"><span class="pre">analyze_adjoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">debug_print</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.analyze_adjoint" title="Link to this definition"></a></dt>
+<dd><p>Performs the adjoint analysis for the object and propagates any computations back through other sub-analyses included in the stack. Internally, this is done by reversing through the stack performing the adjoint analysis for each individual object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.declare_design_vars">
+<span class="sig-name descname"><span class="pre">declare_design_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.declare_design_vars" title="Link to this definition"></a></dt>
+<dd><p>Declare design variables for the analysis object. This could be all of the variables for the object or a subset based on the user input to the method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>variables</strong> (<em>list</em>) – A list of strings which correspond to the variables that are to be included as design variables for the analysis object. This list is stored internally as an attribute and specifies which variables are included in adjoint tests.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.get_global_name">
+<span class="sig-name descname"><span class="pre">get_global_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.get_global_name" title="Link to this definition"></a></dt>
+<dd><p>Gets the global name for an input local name. This function works for all parameters, variables, and outputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>local_name</strong> (<em>str</em>) – A string that is the local name for a given parameter, variable, or output of the object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>global_name</strong> – A string that is the global name for a given parameter, variable, or output of the object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.get_output_metadata">
+<span class="sig-name descname"><span class="pre">get_output_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['all']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.get_output_metadata" title="Link to this definition"></a></dt>
+<dd><p>Gets the metadata associated with the outputs specified in the outputs list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>outputs</strong> (<em>list</em>) – A list of strings that specifies the local output names that are to be accessed. Default is “all”, which returns the metadata for all outputs for the object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>out_meta</strong> (<em>dict</em>) – A dictionary of dictionaries for the specified outputs. Each sub-dictionary contains key-value pairs for the following information: variable type, shape (if applicable), and description.</p></li>
+<li><p><strong>display_info</strong> (<em>bool</em>) – Boolean value that dictates whether variable metadata should be displayed when this method is called. Default is False.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.get_output_values">
+<span class="sig-name descname"><span class="pre">get_output_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['all']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.get_output_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the values for the specified outputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>outputs</strong> (<em>list</em>) – A list of strings that specifies the local output names that are to be returned. Default is “all”, which returns all of the outputs for the object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>output_values</strong> (<em>dict</em>) – A dictionary that contains key-value pairs for the desired outputs based on the input to the function.</p></li>
+<li><p><strong>display_data</strong> (<em>bool</em>) – Boolean value that dictates whether output values should be displayed when this method is called. Default is False.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.get_parameter_values">
+<span class="sig-name descname"><span class="pre">get_parameter_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['all']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.get_parameter_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the values for the parameters specified in the parameters input list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>list</em>) – A list of strings that specifies the local parameter names that are to be returned. Default is “all”, which returns all of the parameters for the object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>param_values</strong> (<em>dict</em>) – A dictionary that contains key-value pairs for the desired parameters based on the input to the function.</p></li>
+<li><p><strong>display_data</strong> (<em>bool</em>) – Boolean value that dictates whether parameter values should be displayed when this method is called. Default is False.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.get_var_derivs">
+<span class="sig-name descname"><span class="pre">get_var_derivs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['all']</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.get_var_derivs" title="Link to this definition"></a></dt>
+<dd><p>Gets the derivative values for the variables specified in the variables input list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>variables</strong> (<em>list</em>) – A list of strings that specifies the local variable names that are to be returned. Default is “all”, which returns all of the variables for the object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>var_derivs</strong> – A dictionary that contains key-value pairs for the desired variable derivatives based on the input to the function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.get_var_metadata">
+<span class="sig-name descname"><span class="pre">get_var_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">['all']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_info</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.get_var_metadata" title="Link to this definition"></a></dt>
+<dd><p>Gets the metadata associated with the variables specified in the variables input list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>variables</strong> (<em>list</em>) – A list of strings that specifies the local variable names that are to be accessed. Default is “all”, which returns the metadata for all variables for the object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>var_meta</strong> (<em>dict</em>) – A dictionary of dictionaries for the specified variables in the input. Each sub-dictionary contains key-value pairs for the following information: variable type, shape (if applicable), and description.</p></li>
+<li><p><strong>display_info</strong> (<em>bool</em>) – Boolean value that dictates whether variable metadata should be displayed when this method is called. Default is False.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.get_var_values">
+<span class="sig-name descname"><span class="pre">get_var_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['all']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.get_var_values" title="Link to this definition"></a></dt>
+<dd><p>Gets the values for the variables specified in the variables input list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>variables</strong> (<em>list</em>) – A list of strings that specifies the local variable names that are to be returned. Default is “all”, which returns all of the variables for the object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>var_values</strong> (<em>dict</em>) – A dictionary that contains key-value pairs for the desired variables based on the input to the function.</p></li>
+<li><p><strong>display_data</strong> (<em>bool</em>) – Boolean value that dictates whether variable values should be displayed when this method is called. Default is False.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.set_var_values">
+<span class="sig-name descname"><span class="pre">set_var_values</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.set_var_values" title="Link to this definition"></a></dt>
+<dd><p>Sets the values for the varaibles based on the entries contained in the variables dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>variables</strong> (<em>dict</em>) – A dictionary that is structued with key-value pairs, where the key is the local name of the variable and the value is the numerical value to set for the variable.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None, but internally State objects for the specified variables are updated with the provided values.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.test_combined_adjoint">
+<span class="sig-name descname"><span class="pre">test_combined_adjoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">print_res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_print</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defined_vars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.test_combined_adjoint" title="Link to this definition"></a></dt>
+<dd><p>Tests the adjoint implementation for an analysis object and accounts for any sub-analyses within the stack.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>debug_print</strong> (<em>bool</em>) – Boolean value that specifies whether debug print statements should be displayed</p></li>
+<li><p><strong>method</strong> (<em>str</em>) – Either ‘cs’ or ‘fd’, which specifies that the method to check against the adjoint implementation is complex-step or finite-difference, respectively</p></li>
+<li><p><strong>defined_vars</strong> (<em>dictionary</em>) – A dictionary where the keys correspond to the global variable names and the values are the numeric values that the variables should have. For example, if the user wants to set a variable ‘x’ for an analysis object ‘analysis’ to be value 1.0, defined_vars should be given as defined_vars = {‘analysis.x’: 1.0}.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.analysis.Analysis.test_isolated_adjoint">
+<span class="sig-name descname"><span class="pre">test_isolated_adjoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">print_res</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug_print</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cs'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defined_vars</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.analysis.Analysis.test_isolated_adjoint" title="Link to this definition"></a></dt>
+<dd><p>Tests the adjoint implementation for an analysis object (ignores any sub-analyses for the isolated case). Currently, only the complex-step method is implemented for this test, so calculations must be complex-safe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>defined_vars</strong> (<em>dictionary</em>) – Dictionary that specifies whether any variables that have defined values for the adjoint test. This is nominally empty, but is sometimes necessary for variables that have strict bounds.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None, but displays results of adjoint analysis test</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-flume.base_classes.state">
+<dt class="sig sig-object py" id="flume.base_classes.state.State">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flume.base_classes.state.</span></span><span class="sig-name descname"><span class="pre">State</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.state.State" title="Link to this definition"></a></dt>
+<dd><p>This is a class to use for establishing a structure for variables and outputs of analysis classes.</p>
+<p>Storing source information here will establish the flow of data between objects. Then, to access variable/output values one would do var[name].value; could do the same for source, deriv, etc.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.state.State.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deriv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.state.State.__init__" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.state.State.set_deriv_value">
+<span class="sig-name descname"><span class="pre">set_deriv_value</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deriv_val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.state.State.set_deriv_value" title="Link to this definition"></a></dt>
+<dd><p>Helper method to set the derivative value for a State object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>deriv_val</strong> (<em>float</em><em> or </em><em>numpy.ndarray</em>) – The value fo the derivative for the State object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class" id="module-flume.base_classes.system">
+<dt class="sig sig-object py" id="flume.base_classes.system.System">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flume.base_classes.system.</span></span><span class="sig-name descname"><span class="pre">System</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_level_analysis_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#flume.base_classes.analysis.Analysis" title="flume.base_classes.analysis.Analysis"><span class="pre">Analysis</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'flume.log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System" title="Link to this definition"></a></dt>
+<dd><p>This class is used to wrap multiple Analysis objects into a system, which can then be utilized to perform optimization using one of Flume’s optimizer interfaces.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sys_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_level_analysis_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#flume.base_classes.analysis.Analysis" title="flume.base_classes.analysis.Analysis"><span class="pre">Analysis</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'flume.log'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.__init__" title="Link to this definition"></a></dt>
+<dd><p>Defines a class that wraps multiple analysis objects into a single system, which can then be utilized to perform optimization with one of Flume’s optimizer interfaces after declaring design varaibles, an objective function, and (optionally) constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sys_name</strong> (<em>str</em>) – Name that is assigned to the System</p></li>
+<li><p><strong>top_level_analysis_list</strong> (<em>list</em>) – A list of instances of Analysis objects that will be utilized within the optimization problem. Here, the objects that should be provided are the analyses that define the objective function and any constraint functions so that these can be declared for the optimization formulation. Other Analysis classes, such as those used as sub-analyses, do not need to be provided here, as they should be provided when creating the objects in the top-level analysis list</p></li>
+<li><p><strong>log_name</strong> (<em>str</em>) – String that defines the name to use for the log file, defaults to ‘flume.log’</p></li>
+<li><p><strong>log_prefix</strong> (<em>str</em>) – String that defines the output directory where the log file and other files are saved, defaults to the current directory ‘.’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.assemble_full_analysis_list">
+<span class="sig-name descname"><span class="pre">assemble_full_analysis_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.assemble_full_analysis_list" title="Link to this definition"></a></dt>
+<dd><p>Assembles the full list of analyses that comprise the overall system architecture.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.declare_constraints">
+<span class="sig-name descname"><span class="pre">declare_constraints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_con_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.declare_constraints" title="Link to this definition"></a></dt>
+<dd><p>Sets the constraints for the optimization problem according to the provided global output names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>global_con_name_dict</strong> (<em>dict</em>) – <p>This is a dictionary of dictionaries. The keys correspond to the global output names for the constraints. The inner dictionary specifies additional information about the structure of the constriant, including the following:</p>
+<ul class="simple">
+<li><p>’rhs’ (float) - specifies the right hand side of the constraint equation. Internally, the optimizer interfaces will use this to convert the constraint to an equivalent form that normalizes it, If the ‘rhs’ value is 0.0, no scaling is applied</p></li>
+<li><p>’direction’ (str) - string that is either ‘geq’ (&gt;=), ‘leq’ (&lt;=), or ‘both’ (=). Defaults to ‘geq’ in the event that a direction is not provided.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<dl class="simple">
+<dt>Here, the constraints are defined as follows:</dt><dd><p>x &lt;= 1.0
+y &gt;= 1.0
+z = 2.0</p>
+</dd>
+<dt>Thus, the argument here is given as: global_con_name = {</dt><dd><p>“block1.x”:{“direction”:”leq”, “rhs”:1.0},
+“block2.y”:{“rhs”:1.0}
+“block3.z”:{“direction”: “both”, “rhs”: 2.0}
+}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.declare_design_vars">
+<span class="sig-name descname"><span class="pre">declare_design_vars</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_var_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.declare_design_vars" title="Link to this definition"></a></dt>
+<dd><p>Sets the design variables for the system according to the provided global variable names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>global_var_name</strong> (<em>dict</em>) – This is a dictionary of dictionaries. Keys for the first dictionary correspond to the global variable names that should be added to the set of design variables, and the values contain information about the variable bounds. If the inner dictionary is empty, then no bounds are provided. Otherwise, the values for the variables lower bound ‘lb’ and upper bound ‘ub’ will be added, if included.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<dl class="simple">
+<dt>Here, the bounds are defined as follows:</dt><dd><p>1.0 &lt;= x &lt;= 2.0
+y has no bounds
+0.0 &lt;= z</p>
+</dd>
+</dl>
+<p>Thus, the argument here is: global_var_name = {“block1.x”:{“lb”:1.0, “lb”:2.0}, “block2.y”:{}, “block3.z”:{“lb”:0.0}}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.declare_foi">
+<span class="sig-name descname"><span class="pre">declare_foi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_foi_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.declare_foi" title="Link to this definition"></a></dt>
+<dd><p>Sets the functions of interest that are to be tracked by the logger at each iteration. Here, the names must be provided according to their global names. If already declared, the objective and constraints are added by default, but other outputs can be included.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.declare_objective">
+<span class="sig-name descname"><span class="pre">declare_objective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_obj_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obj_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.declare_objective" title="Link to this definition"></a></dt>
+<dd><p>Sets the objective function for the optimization problem according to the provided global output name. This output should be associated with one of the top-level analyses for the system (i.e. included in the top_level_analysis_list).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>global_obj_name</strong> (<em>str</em>) – A string that specifies the global name for the value that is to be used as the objective function (global name meaning ‘object_name.local_output_name’)</p></li>
+<li><p><strong>obj_scale</strong> (<em>float</em>) – Float value that is <em>multiplied</em> by the value of the objective function, which should scale the objective function value to O(1). This is used by the optimizer interfaces internally to scale the objective.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.graph_network">
+<span class="sig-name descname"><span class="pre">graph_network</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interactive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.graph_network" title="Link to this definition"></a></dt>
+<dd><p>Construct the visualization of the network associated with the Flume system using graphviz.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Name to use for the file that is created</p></li>
+<li><p><strong>output_directory</strong> (<em>str</em>) – String that defines the directory where the file should be saved</p></li>
+<li><p><strong>interactive</strong> (<em>bool</em>) – Boolean value that indicates whether the graph should be output in interactive mode. <em>This is an experimental feature at the moment</em></p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.log_information">
+<span class="sig-name descname"><span class="pre">log_information</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iter_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.log_information" title="Link to this definition"></a></dt>
+<dd><p>Helper function that is used to log the values for the objective function, constraints, and other functions of interest at each iteration. Internally, this will update the log file for the System with this information at every iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iter_number</strong> (<em>int</em>) – Current iteration number</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.profile_iteration">
+<span class="sig-name descname"><span class="pre">profile_iteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iter_number</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.profile_iteration" title="Link to this definition"></a></dt>
+<dd><p>Helper function that is used to display the time taken for each analyze and analyze_adjoint method at the current iteration. Internally, this updates a profile log file that stores the timing information for the System at each iteration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>iter_number</strong> (<em>int</em>) – Current iteration number</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flume.base_classes.system.System.reset_analysis_flags">
+<span class="sig-name descname"><span class="pre">reset_analysis_flags</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">it_counter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#flume.base_classes.system.System.reset_analysis_flags" title="Link to this definition"></a></dt>
+<dd><p>Resets all of the analysis flags for all analyses within the system to be False. This is done when variable values are updated, as all systems must be analyzed again to propagate chanes in design variable values.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="analysis_methods_demo.html" class="btn btn-neutral float-left" title="Useful Methods Demonstration for Analysis Instances" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="interface_reference.html" class="btn btn-neutral float-right" title="Interfaces Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cameron Smith.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

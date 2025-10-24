@@ -1,0 +1,171 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flume &mdash; Flume  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Flume Overview" href="source/flume_overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            Flume
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="source/flume_overview.html"><em>Flume</em> Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/analysis_methods_demo.html">Useful Methods Demonstration for <em>Analysis</em> Instances</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/base_class_reference.html">Base Class Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/interface_reference.html">Interfaces Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">Flume</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Flume</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="flume">
+<h1>Flume<a class="headerlink" href="#flume" title="Link to this heading"></a></h1>
+<p>Flume is an open-source framework for multidisciplinary analysis and adjoint evaluations based on directed acyclic graphs. It is intended to be a lightweight framework that affords users with a degree of flexibility in implementing their own analysis and optimization procedures while providing a common underlying structure. <em>Flume</em> also has a set of interfaces between some common optimizers, which allow the user to easily setup an optimization problem that corresponds to their specific needs.</p>
+<section id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h2>
+<p>For new users, it is recommended that you read the <em>Flume</em> <a class="reference external" href="https://github.com/smdogroup/flume/blob/main/examples/flume_overview.ipynb">overview notebook</a>, which outlines in detail the critical aspects of the framework in context of an example. This discusses the nomenclature that is used within the framework and illustrates how to construct <em>State</em>, <em>Analysis</em>, and <em>System</em> objects for use with a <em>Flume</em> interface. Also, for a review of other useful methods that are included for <em>Analysis</em> classes, check out the <a class="reference external" href="https://github.com/smdogroup/flume/blob/main/examples/analysis_methods_demo.ipynb">methods demonstration notebook</a>. The <a class="reference external" href="https://github.com/smdogroup/flume/tree/main/examples">examples gallery</a> also includes several different types of problems, which showcase the construction of many types of <em>Analysis</em> classes, the assembly of a <em>System</em>, and how to interface with an optimizer interface.</p>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p>To install <em>Flume</em>, the only necessary dependency is a working version of Python that is at least version 3.10. It is generally encouraged that you use a virtual environment. If you do not have a virtual environment already, navigate to the directory where you want to use <em>Flume</em> and execute the following.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">venv</span>
+<span class="n">source</span> <span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+</pre></div>
+</div>
+<p>Then, with the virtual environment activated, simply install the package from the GitHub repository with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">git</span><span class="o">+</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">smdogroup</span><span class="o">/</span><span class="n">flume</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>This will install the base classes, optimizer interfaces, and utilities into a Python package named “flume”. For those who want to make changes to the code or access the unit tests and examples, you can also clone the repository and then install in editable mode.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="p">{</span><span class="n">your_chosen_git_directory</span><span class="p">}</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">smdogroup</span><span class="o">/</span><span class="n">flume</span><span class="o">.</span><span class="n">git</span>
+<span class="n">cd</span> <span class="n">flume</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">venv</span> <span class="n">venv</span>
+<span class="n">source</span> <span class="n">venv</span><span class="o">/</span><span class="nb">bin</span><span class="o">/</span><span class="n">activate</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+<p>After following either of these processes, you should be able to access the base classes and get started with developing your own scripts within the framework! It should be noted that ParOpt is a separate package that is not included with <em>Flume</em> during the build process. For those who want to utilize this interface, we refer you to the <a class="reference external" href="https://github.com/smdogroup/paropt/blob/master/INSTALL.txt">ParOpt installation instructions</a>.</p>
+</section>
+</section>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="source/flume_overview.html"><em>Flume</em> Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="source/flume_overview.html#Framework-Nomenclature">Framework Nomenclature</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/flume_overview.html#Defining-an-Analysis-Class">Defining an <em>Analysis</em> Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/flume_overview.html#Setting-up-a-System">Setting up a <em>System</em></a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/flume_overview.html#Formulating-an-Optimization-Problem">Formulating an Optimization Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/flume_overview.html#Optimizing-with-the-SciPy-Interface">Optimizing with the SciPy Interface</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/flume_overview.html#Other-Resources-to-Review">Other Resources to Review</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="source/analysis_methods_demo.html">Useful Methods Demonstration for <em>Analysis</em> Instances</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="source/analysis_methods_demo.html#Forward-and-Adjoint-Analyses">Forward and Adjoint Analyses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/analysis_methods_demo.html#Data-Extraction-Methods">Data Extraction Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/analysis_methods_demo.html#Adjoint-Verification-Methods">Adjoint Verification Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="source/base_class_reference.html">Base Class Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="source/base_class_reference.html#flume.base_classes.analysis.Analysis"><code class="docutils literal notranslate"><span class="pre">Analysis</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/base_class_reference.html#flume.base_classes.state.State"><code class="docutils literal notranslate"><span class="pre">State</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/base_class_reference.html#flume.base_classes.system.System"><code class="docutils literal notranslate"><span class="pre">System</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="source/interface_reference.html">Interfaces Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="source/interface_reference.html#flume.interfaces.scipy_interface.FlumeScipyInterface"><code class="docutils literal notranslate"><span class="pre">FlumeScipyInterface</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="source/interface_reference.html#flume.interfaces.paropt_interface.FlumeParOptInterface"><code class="docutils literal notranslate"><span class="pre">FlumeParOptInterface</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="source/flume_overview.html" class="btn btn-neutral float-right" title="Flume Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cameron Smith.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

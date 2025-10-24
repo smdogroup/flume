@@ -1,0 +1,346 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "aa66e2b3",
+   "metadata": {},
+   "source": [
+    "# Useful Methods Demonstration for *Analysis* Instances\n",
+    "\n",
+    "This notebook outlines some additional methods that are associated with all classes that inherit from the *Flume* *Analysis* base class. While not critical for using the framework to construct disciplines and formulate a *System*, these are a set of helper methods that can be used to extract various information about *Analysis* classes and test adjoint procedures. These methods will be outlined in separate notebook cells in the context of the Rosenbrock example."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "1d99974e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import sys\n",
+    "import os\n",
+    "\n",
+    "# Add the root directory of the repository \n",
+    "sys.path.append(os.path.abspath(\"..\"))\n",
+    "\n",
+    "from examples.rosenbrock.rosenbrock_problem_classes import Rosenbrock, RosenbrockDVs\n",
+    "\n",
+    "# Construct the design variables object\n",
+    "rosenbrock_dvs = RosenbrockDVs(obj_name=\"dvs\", sub_analyses=[])\n",
+    "\n",
+    "# Construct the instance of the Rosenbrock class\n",
+    "a = 1.0\n",
+    "b = 100.0\n",
+    "\n",
+    "rosenbrock = Rosenbrock(\n",
+    "    obj_name=\"rosenbrock\", sub_analyses=[rosenbrock_dvs], a=a, b=b\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "222663c5",
+   "metadata": {},
+   "source": [
+    "## Forward and Adjoint Analyses\n",
+    "In the event that a user does not elect to work with an optimizer interface or wants to simply perform forward or adjoint analyses independently of optimization, two methods exist for *Analysis* classes. For the forward analysis, the `analyze` method will perform the analysis procedures to compute the outputs of interest. Note that this is not the private `_analyze` method, where the key distinction is that the master `analyze` will also execute any sub-analyses associated with this class before calling its private `_analyze` method. To illustrate this further, consider the two examples below where the private and master methods are called separately, noting the difference in the output values for $f$. This also demonstrates the use of the `set_var_values` method, which is used to set the values of the *State* objects in the `variables` dictionary. Note that the difference will only appear the first time this cell is executed, as the variable values are not reset to their defaults after execution."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "ad8ca381",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Output from private _analyze method: f = 1.0\n",
+      "Output from master analyze method: f = 0.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Set the variable values for the RosenbrockDVs instance\n",
+    "rosenbrock_dvs.set_var_values(variables={\"x_dv\":1.0, \"y_dv\":1.0})\n",
+    "\n",
+    "# Execute the private analyze method and extract the output value\n",
+    "rosenbrock._analyze()\n",
+    "fp = rosenbrock.outputs[\"f\"].value\n",
+    "\n",
+    "# Execute the master analyze method and extract the output value\n",
+    "rosenbrock.analyze()\n",
+    "fm = rosenbrock.outputs[\"f\"].value\n",
+    "\n",
+    "print(f\"Output from private _analyze method: f = {fp}\")\n",
+    "print(f\"Output from master analyze method: f = {fm}\")\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "824028ab",
+   "metadata": {},
+   "source": [
+    "Similarly, if the user wants to perform the adjoint analysis, the master `analyze_adjoint` method should be called instead of the private `_analyze_adjoint` method. Executing the adjoint analysis in a meaningful way would also require the user to set seeds on the outputs of interest using the `_add_output_seed` method. These methods are used internally with *Flume*'s optimizer interfaces, so it is generally recommended to use these along with a *System* rather than separately executing `analyze` and `analyze_adjoint`."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "2792926b",
+   "metadata": {},
+   "source": [
+    "## Data Extraction Methods\n",
+    "The next set of methods involves the *State* objects stored within the `variables` dictionary. After the `analyze` and `analyze_adjoint` methods have been performed, the values, derivatives, and metadata for the variables can be extracted with the following methods. The `get_var_metadata` method returns type and description information for each variable associated with the *Analysis* object. The information is returned as a dictionary, but the user can optionally display the information in the terminal output. The first argument `variables` is a list, which defaults to `[\"all\"]`, that specifies for which variables the data should be accessed."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "ea263f62",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "\n",
+      " Variable 'x' Information:\n",
+      "----------------------------\n",
+      "    type : float\n",
+      "    descript : Value for x\n",
+      "\n",
+      "\n",
+      " Variable 'y' Information:\n",
+      "----------------------------\n",
+      "    type : float\n",
+      "    descript : Value for y\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Extract the metadata for the variables\n",
+    "var_meta = rosenbrock.get_var_metadata(variables=[\"all\"], display_info=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "9b9dd146",
+   "metadata": {},
+   "source": [
+    "Variable values and derivatives can also be extracted in a similar manner with `get_var_values` and `get_var_derivs`, respectively."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "id": "1f62df9d",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      " Variable values for object named 'rosenbrock':\n",
+      "------------------------------------------------\n",
+      "    x  = 1.0\n",
+      "    y  = 1.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Extract the Rosenbrock variable values\n",
+    "var_values = rosenbrock.get_var_values(variables=[\"all\"], display_data=True)\n",
+    "\n",
+    "# Extract the Rosenbrock derivative values (no option to display, as the derivatives may be large arrays)\n",
+    "var_derivs = rosenbrock.get_var_derivs(variables=[\"all\"])"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "73acdae4",
+   "metadata": {},
+   "source": [
+    "Similar methods also exist for the outputs, which allows for the extraction of metadata and values, and parameters, which contain only value information."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "id": "e9ccc454",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      " Parameter values for object named 'rosenbrock':\n",
+      "-------------------------------------------------\n",
+      "    a  = 1.0\n",
+      "    b  = 100.0\n",
+      "\n",
+      " Output values for object named 'rosenbrock':\n",
+      "----------------------------------------------\n",
+      "    f  = 0.0\n",
+      "\n",
+      "\n",
+      " Output 'f' Information:\n",
+      "--------------------------\n",
+      "    type : float\n",
+      "    descript : Rosenbrock function value\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Extract the parameter values\n",
+    "param_values = rosenbrock.get_parameter_values(params=[\"all\"], display_data=True)\n",
+    "\n",
+    "# Extract the output values\n",
+    "out_values = rosenbrock.get_output_values(outputs=[\"all\"], display_data=True)\n",
+    "\n",
+    "# Extract the output metadata\n",
+    "out_meta = rosenbrock.get_output_metadata(outputs=[\"all\"], display_info=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1b06fa4b",
+   "metadata": {},
+   "source": [
+    "Finally, if a user wants to view the global names for variables, outputs, or parameters --- which are needed to declare the design variables, objective function, and constraints for a *System* --- the `get_global_name` method can be utilized, where the input is a string that corresponds to a local name for an input or output."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "id": "ba34056a",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "rosenbrock.x\n",
+      "rosenbrock.a\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Print the global variable name for x\n",
+    "print(rosenbrock.get_global_name(local_name=\"x\"))\n",
+    "\n",
+    "# Print the global parameter name for a\n",
+    "print(rosenbrock.get_global_name(local_name=\"a\"))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "73f977f7",
+   "metadata": {},
+   "source": [
+    "## Adjoint Verification Methods\n",
+    "\n",
+    "As the implementation of the adjoint method is critical to ensure accurate derivatives for gradient-based design optimization, two helper methods are provided to test the adjoint method in two distinct contexts. First, `test_isolated_adjoint` is utilized to verify the private `_analyze_adjoint` method, which ignores any connected sub-analyses. This is generally the first test that should be conducted, as it isolates the computations for a specific *Analysis* class. Both forward-difference and complex-step checks are supported, but the *Analysis* class must be complex compatible to use the complex-step method. Before executing this method, the user must also declare the variables that are treated as design variables for the derivative check with the `declare_design_vars` method. This takes in a list, which can contain a subset or all of the local variable names for an *Analysis* class, which allows for further control when debugging derivatives."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "id": "2aaeeeb4",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      " -----------------------------------------------------------------------\n",
+      "ISOLATED adjoint test results for Rosenbrock object named 'rosenbrock':\n",
+      "-----------------------------------------------------------------------\n",
+      "\n",
+      "                    Answer               Complex-step                  Rel Error\n",
+      "    3.029073681601402e+00      3.029073681601401e+00      4.398267488976527e-16\n",
+      "\n",
+      " ratio (ans/cs):  1.0000000000000004\n",
+      "\n",
+      " 1/ratio (cs/ans):  0.9999999999999996\n",
+      "-----------------------------------------------------------------------\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Declare the design variables for the Rosenbrock class\n",
+    "rosenbrock.declare_design_vars(variables=[\"x\", \"y\"])\n",
+    "\n",
+    "# Test the isolated adjoint \n",
+    "rel_err = rosenbrock.test_isolated_adjoint(print_res=True, method=\"cs\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "03bbd522",
+   "metadata": {},
+   "source": [
+    "After checking the isolated adjoint, the user can also call the test_combined_adjoint method to verify total derivatives, which are assembled when `sub_analyses` are used. Again, the user must declare the design variables that should be checked, but here the declaration is made on the origin for the analysis procedure. In this example, this is the `rosenbrock_dvs` instance, as this provides the design variables `x_dv` and `y_dv`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "id": "f431e1a5",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      " -----------------------------------------------------------------------\n",
+      "\n",
+      " COMBINED adjoint test results for Rosenbrock object named rosenbrock:\n",
+      "-----------------------------------------------------------------------\n",
+      "\n",
+      "                    Answer               Complex-step                  Rel Error\n",
+      "   -7.192738911564374e+00     -7.192738911564375e+00     -1.234826441805257e-16\n",
+      "\n",
+      " ratio (ans/cs):  0.9999999999999999\n",
+      "\n",
+      " 1/ratio (cs/ans):  1.0000000000000002\n",
+      "-----------------------------------------------------------------------\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Declare the design variables for the RosenbrockDVs class\n",
+    "rosenbrock_dvs.declare_design_vars(variables=[\"x_dv\", \"y_dv\"])\n",
+    "\n",
+    "# Test the combined adjoint on the Rosenbrock class, which has an instance of RosenbrockDVs as a sub-analysis\n",
+    "rel_err = rosenbrock.test_combined_adjoint(print_res=True, method=\"cs\")"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "venv",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.8"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

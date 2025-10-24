@@ -1,0 +1,371 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Useful Methods Demonstration for Analysis Instances &mdash; Flume  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Base Class Reference" href="base_class_reference.html" />
+    <link rel="prev" title="Flume Overview" href="flume_overview.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Flume
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="flume_overview.html"><em>Flume</em> Overview</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Useful Methods Demonstration for <em>Analysis</em> Instances</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Forward-and-Adjoint-Analyses">Forward and Adjoint Analyses</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Data-Extraction-Methods">Data Extraction Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Adjoint-Verification-Methods">Adjoint Verification Methods</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="base_class_reference.html">Base Class Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interface_reference.html">Interfaces Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Flume</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Useful Methods Demonstration for <em>Analysis</em> Instances</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/analysis_methods_demo.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Useful-Methods-Demonstration-for-Analysis-Instances">
+<h1>Useful Methods Demonstration for <em>Analysis</em> Instances<a class="headerlink" href="#Useful-Methods-Demonstration-for-Analysis-Instances" title="Link to this heading"></a></h1>
+<p>This notebook outlines some additional methods that are associated with all classes that inherit from the <em>Flume</em> <em>Analysis</em> base class. While not critical for using the framework to construct disciplines and formulate a <em>System</em>, these are a set of helper methods that can be used to extract various information about <em>Analysis</em> classes and test adjoint procedures. These methods will be outlined in separate notebook cells in the context of the Rosenbrock example.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="c1"># Add the root directory of the repository</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">))</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">examples.rosenbrock.rosenbrock_problem_classes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rosenbrock</span><span class="p">,</span> <span class="n">RosenbrockDVs</span>
+
+<span class="c1"># Construct the design variables object</span>
+<span class="n">rosenbrock_dvs</span> <span class="o">=</span> <span class="n">RosenbrockDVs</span><span class="p">(</span><span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;dvs&quot;</span><span class="p">,</span> <span class="n">sub_analyses</span><span class="o">=</span><span class="p">[])</span>
+
+<span class="c1"># Construct the instance of the Rosenbrock class</span>
+<span class="n">a</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">b</span> <span class="o">=</span> <span class="mf">100.0</span>
+
+<span class="n">rosenbrock</span> <span class="o">=</span> <span class="n">Rosenbrock</span><span class="p">(</span>
+    <span class="n">obj_name</span><span class="o">=</span><span class="s2">&quot;rosenbrock&quot;</span><span class="p">,</span> <span class="n">sub_analyses</span><span class="o">=</span><span class="p">[</span><span class="n">rosenbrock_dvs</span><span class="p">],</span> <span class="n">a</span><span class="o">=</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">b</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<section id="Forward-and-Adjoint-Analyses">
+<h2>Forward and Adjoint Analyses<a class="headerlink" href="#Forward-and-Adjoint-Analyses" title="Link to this heading"></a></h2>
+<p>In the event that a user does not elect to work with an optimizer interface or wants to simply perform forward or adjoint analyses independently of optimization, two methods exist for <em>Analysis</em> classes. For the forward analysis, the <code class="docutils literal notranslate"><span class="pre">analyze</span></code> method will perform the analysis procedures to compute the outputs of interest. Note that this is not the private <code class="docutils literal notranslate"><span class="pre">_analyze</span></code> method, where the key distinction is that the master <code class="docutils literal notranslate"><span class="pre">analyze</span></code> will also execute any sub-analyses associated with this class
+before calling its private <code class="docutils literal notranslate"><span class="pre">_analyze</span></code> method. To illustrate this further, consider the two examples below where the private and master methods are called separately, noting the difference in the output values for <span class="math notranslate nohighlight">\(f\)</span>. This also demonstrates the use of the <code class="docutils literal notranslate"><span class="pre">set_var_values</span></code> method, which is used to set the values of the <em>State</em> objects in the <code class="docutils literal notranslate"><span class="pre">variables</span></code> dictionary. Note that the difference will only appear the first time this cell is executed, as the variable values are not reset to
+their defaults after execution.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set the variable values for the RosenbrockDVs instance</span>
+<span class="n">rosenbrock_dvs</span><span class="o">.</span><span class="n">set_var_values</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;x_dv&quot;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;y_dv&quot;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">})</span>
+
+<span class="c1"># Execute the private analyze method and extract the output value</span>
+<span class="n">rosenbrock</span><span class="o">.</span><span class="n">_analyze</span><span class="p">()</span>
+<span class="n">fp</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;f&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+
+<span class="c1"># Execute the master analyze method and extract the output value</span>
+<span class="n">rosenbrock</span><span class="o">.</span><span class="n">analyze</span><span class="p">()</span>
+<span class="n">fm</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="s2">&quot;f&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output from private _analyze method: f = </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output from master analyze method: f = </span><span class="si">{</span><span class="n">fm</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<br/></pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Output from private _analyze method: f = 1.0
+Output from master analyze method: f = 0.0
+</pre></div></div>
+</div>
+<p>Similarly, if the user wants to perform the adjoint analysis, the master <code class="docutils literal notranslate"><span class="pre">analyze_adjoint</span></code> method should be called instead of the private <code class="docutils literal notranslate"><span class="pre">_analyze_adjoint</span></code> method. Executing the adjoint analysis in a meaningful way would also require the user to set seeds on the outputs of interest using the <code class="docutils literal notranslate"><span class="pre">_add_output_seed</span></code> method. These methods are used internally with <em>Flume</em>’s optimizer interfaces, so it is generally recommended to use these along with a <em>System</em> rather than separately executing
+<code class="docutils literal notranslate"><span class="pre">analyze</span></code> and <code class="docutils literal notranslate"><span class="pre">analyze_adjoint</span></code>.</p>
+</section>
+<section id="Data-Extraction-Methods">
+<h2>Data Extraction Methods<a class="headerlink" href="#Data-Extraction-Methods" title="Link to this heading"></a></h2>
+<p>The next set of methods involves the <em>State</em> objects stored within the <code class="docutils literal notranslate"><span class="pre">variables</span></code> dictionary. After the <code class="docutils literal notranslate"><span class="pre">analyze</span></code> and <code class="docutils literal notranslate"><span class="pre">analyze_adjoint</span></code> methods have been performed, the values, derivatives, and metadata for the variables can be extracted with the following methods. The <code class="docutils literal notranslate"><span class="pre">get_var_metadata</span></code> method returns type and description information for each variable associated with the <em>Analysis</em> object. The information is returned as a dictionary, but the user can optionally display the information
+in the terminal output. The first argument <code class="docutils literal notranslate"><span class="pre">variables</span></code> is a list, which defaults to <code class="docutils literal notranslate"><span class="pre">[&quot;all&quot;]</span></code>, that specifies for which variables the data should be accessed.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract the metadata for the variables</span>
+<span class="n">var_meta</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">get_var_metadata</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">],</span> <span class="n">display_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+
+ Variable &#39;x&#39; Information:
+----------------------------
+    type : float
+    descript : Value for x
+
+
+ Variable &#39;y&#39; Information:
+----------------------------
+    type : float
+    descript : Value for y
+</pre></div></div>
+</div>
+<p>Variable values and derivatives can also be extracted in a similar manner with <code class="docutils literal notranslate"><span class="pre">get_var_values</span></code> and <code class="docutils literal notranslate"><span class="pre">get_var_derivs</span></code>, respectively.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract the Rosenbrock variable values</span>
+<span class="n">var_values</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">get_var_values</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">],</span> <span class="n">display_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Extract the Rosenbrock derivative values (no option to display, as the derivatives may be large arrays)</span>
+<span class="n">var_derivs</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">get_var_derivs</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+ Variable values for object named &#39;rosenbrock&#39;:
+------------------------------------------------
+    x  = 1.0
+    y  = 1.0
+</pre></div></div>
+</div>
+<p>Similar methods also exist for the outputs, which allows for the extraction of metadata and values, and parameters, which contain only value information.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract the parameter values</span>
+<span class="n">param_values</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">get_parameter_values</span><span class="p">(</span><span class="n">params</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">],</span> <span class="n">display_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Extract the output values</span>
+<span class="n">out_values</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">get_output_values</span><span class="p">(</span><span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">],</span> <span class="n">display_data</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Extract the output metadata</span>
+<span class="n">out_meta</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">get_output_metadata</span><span class="p">(</span><span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;all&quot;</span><span class="p">],</span> <span class="n">display_info</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+ Parameter values for object named &#39;rosenbrock&#39;:
+-------------------------------------------------
+    a  = 1.0
+    b  = 100.0
+
+ Output values for object named &#39;rosenbrock&#39;:
+----------------------------------------------
+    f  = 0.0
+
+
+ Output &#39;f&#39; Information:
+--------------------------
+    type : float
+    descript : Rosenbrock function value
+</pre></div></div>
+</div>
+<p>Finally, if a user wants to view the global names for variables, outputs, or parameters — which are needed to declare the design variables, objective function, and constraints for a <em>System</em> — the <code class="docutils literal notranslate"><span class="pre">get_global_name</span></code> method can be utilized, where the input is a string that corresponds to a local name for an input or output.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print the global variable name for x</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rosenbrock</span><span class="o">.</span><span class="n">get_global_name</span><span class="p">(</span><span class="n">local_name</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">))</span>
+
+<span class="c1"># Print the global parameter name for a</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">rosenbrock</span><span class="o">.</span><span class="n">get_global_name</span><span class="p">(</span><span class="n">local_name</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+rosenbrock.x
+rosenbrock.a
+</pre></div></div>
+</div>
+</section>
+<section id="Adjoint-Verification-Methods">
+<h2>Adjoint Verification Methods<a class="headerlink" href="#Adjoint-Verification-Methods" title="Link to this heading"></a></h2>
+<p>As the implementation of the adjoint method is critical to ensure accurate derivatives for gradient-based design optimization, two helper methods are provided to test the adjoint method in two distinct contexts. First, <code class="docutils literal notranslate"><span class="pre">test_isolated_adjoint</span></code> is utilized to verify the private <code class="docutils literal notranslate"><span class="pre">_analyze_adjoint</span></code> method, which ignores any connected sub-analyses. This is generally the first test that should be conducted, as it isolates the computations for a specific <em>Analysis</em> class. Both forward-difference
+and complex-step checks are supported, but the <em>Analysis</em> class must be complex compatible to use the complex-step method. Before executing this method, the user must also declare the variables that are treated as design variables for the derivative check with the <code class="docutils literal notranslate"><span class="pre">declare_design_vars</span></code> method. This takes in a list, which can contain a subset or all of the local variable names for an <em>Analysis</em> class, which allows for further control when debugging derivatives.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[32]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Declare the design variables for the Rosenbrock class</span>
+<span class="n">rosenbrock</span><span class="o">.</span><span class="n">declare_design_vars</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">])</span>
+
+<span class="c1"># Test the isolated adjoint</span>
+<span class="n">rel_err</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">test_isolated_adjoint</span><span class="p">(</span><span class="n">print_res</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cs&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+ -----------------------------------------------------------------------
+ISOLATED adjoint test results for Rosenbrock object named &#39;rosenbrock&#39;:
+-----------------------------------------------------------------------
+
+                    Answer               Complex-step                  Rel Error
+    3.029073681601402e+00      3.029073681601401e+00      4.398267488976527e-16
+
+ ratio (ans/cs):  1.0000000000000004
+
+ 1/ratio (cs/ans):  0.9999999999999996
+-----------------------------------------------------------------------
+</pre></div></div>
+</div>
+<p>After checking the isolated adjoint, the user can also call the test_combined_adjoint method to verify total derivatives, which are assembled when <code class="docutils literal notranslate"><span class="pre">sub_analyses</span></code> are used. Again, the user must declare the design variables that should be checked, but here the declaration is made on the origin for the analysis procedure. In this example, this is the <code class="docutils literal notranslate"><span class="pre">rosenbrock_dvs</span></code> instance, as this provides the design variables <code class="docutils literal notranslate"><span class="pre">x_dv</span></code> and <code class="docutils literal notranslate"><span class="pre">y_dv</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[33]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Declare the design variables for the RosenbrockDVs class</span>
+<span class="n">rosenbrock_dvs</span><span class="o">.</span><span class="n">declare_design_vars</span><span class="p">(</span><span class="n">variables</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;x_dv&quot;</span><span class="p">,</span> <span class="s2">&quot;y_dv&quot;</span><span class="p">])</span>
+
+<span class="c1"># Test the combined adjoint on the Rosenbrock class, which has an instance of RosenbrockDVs as a sub-analysis</span>
+<span class="n">rel_err</span> <span class="o">=</span> <span class="n">rosenbrock</span><span class="o">.</span><span class="n">test_combined_adjoint</span><span class="p">(</span><span class="n">print_res</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;cs&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+
+ -----------------------------------------------------------------------
+
+ COMBINED adjoint test results for Rosenbrock object named rosenbrock:
+-----------------------------------------------------------------------
+
+                    Answer               Complex-step                  Rel Error
+   -7.192738911564374e+00     -7.192738911564375e+00     -1.234826441805257e-16
+
+ ratio (ans/cs):  0.9999999999999999
+
+ 1/ratio (cs/ans):  1.0000000000000002
+-----------------------------------------------------------------------
+</pre></div></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="flume_overview.html" class="btn btn-neutral float-left" title="Flume Overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="base_class_reference.html" class="btn btn-neutral float-right" title="Base Class Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Cameron Smith.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
