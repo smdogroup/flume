@@ -263,7 +263,9 @@ With these additional applications, the framework would be further equipped to s
     - examples to include: Hohmann transfer from OpenMDAO (opt), Rosenbrock (opt), multi-objective (demonstrating more complex system construction), COPS sphere problem (opt)
 - DONE: add beam example from OpenMDAO
 - DONE: add a script/jupyter notebook/something that details the useful helper methods and outlines how to start constructing a Flume example (want to incorporate adjoint test methods, network visualization, etc.)
-- TODO: update README.md with installation instructions, and point the user to various helpful portions of the documentation (e.g. new users check out the Jupyter notebook, for descriptive details point to the paper, etc.)
+- TODO: update README.md with installation instructions, and point the user to various helpful portions of the documentation (e.g. new users check out the Jupyter notebook, for descriptive details point to the paper, etc.); make this homepage for the RTD
 - TODO: Documentation/RTD website page
+    - include the overview and methods files in the RTD page
+    - API
 - DONE: determine where to add info about SciPy and ParOpt interfaces
 -->
