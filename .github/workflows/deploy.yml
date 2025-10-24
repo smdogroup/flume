@@ -33,8 +33,6 @@ jobs:
         conda activate flumepage
         conda install mamba=1.5.10 -c conda-forge
         conda install libmamba -c conda-forge
-        python setup.py build
-        python setup.py install --user
         cd ../..
         conda --version
         mamba --version
