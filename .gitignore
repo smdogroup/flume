@@ -8,3 +8,4 @@ flume_venv/
 *.pdf
 *.log
 tests/rosenbrock_*/
+docs/_build/
