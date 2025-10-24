@@ -31,6 +31,7 @@ jobs:
           conda activate flumepage
           conda install mamba=1.5.10 -c conda-forge
           conda install libmamba -c conda-forge
+          conda install pandoc
           pip install -r docs/source/requirements.txt
           echo $PWD
           conda --version
