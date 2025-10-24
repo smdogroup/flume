@@ -8,6 +8,7 @@ version = "0.2.0"
 description = "A framework for performing forward and derivative analyses for systems following directed acylic graph structure."
 readme = "README.md"
 authors = [{ name = "Cameron Smith", email = "csmith763@gatech.edu" }]
+dynamic = ["dependencies"]
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
