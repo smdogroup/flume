@@ -1,4 +1,4 @@
-# Description: this defines the run script that combines the individual Flume Analysis classes, located within the other files in this directory, into a System. The FlumeScipyInterface is utilized to perform the optimization, as well.
+# Description: the example outlined in this file is adapted from the OpenMDAO documentation "Hohmann Transfer Example - Optimizing a Spacecraft Manuever" (https://openmdao.org/newdocs/versions/latest/examples/hohmann_transfer/hohmann_transfer.html). This file defines the run script that combines the individual Flume Analysis classes, located within the other files in this directory, into a System. The FlumeScipyInterface is utilized to perform the optimization, as well.
 
 from flume.base_classes.system import System
 from examples.hohmann_transfer.vcirc import VCircAnalysis

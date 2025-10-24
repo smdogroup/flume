@@ -1,3 +1,6 @@
+# Description: This file combines the Analysis classes contained within this directory to perform optimization for the Thomson problem. This was adapted from the Benchmarking Optimization Software with COPS 3.0 guide, and more information can be found at the following link: https://www.mcs.anl.gov/~more/cops/.
+
+
 from flume.base_classes.system import System
 from icecream import ic
 import numpy as np

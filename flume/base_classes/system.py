@@ -9,13 +9,7 @@ import numpy as np
 
 class System:
     """
-    This is a potential new class that is being workshopped. The idea here is to have this combine one or several analysis objects into a new class. This will help create a wrapper around separate analysis procedures, which could then be used within an optimization problem. Some of the methods associated with this class might include:
-
-    1. Network visualization: construct a plot for visualizing the network (using networkX Python package)
-    2. Adding/declaring design variables
-    3. Declaring objective/constraint functions for different outputs
-    4. Declaring other FOI
-    5. Adding FOI, obj, cons to a log file (flume.log) that can be updated throughout the optimization procedure.
+    This class is used to wrap multiple Analysis objects into a system, which can then be utilized to perform optimization using one of Flume's optimizer interfaces.
     """
 
     def __init__(
@@ -23,8 +17,22 @@ class System:
         sys_name: str,
         top_level_analysis_list: List[Analysis],
         log_name: str = "flume.log",
-        log_prefix: str = None,
+        log_prefix: str = ".",
     ):
+        """
+        Defines a class that wraps multiple analysis objects into a single system, which can then be utilized to perform optimization with one of Flume's optimizer interfaces after declaring design varaibles, an objective function, and (optionally) constraints.
+
+        Parameters
+        ----------
+        sys_name : str
+            Name that is assigned to the System
+        top_level_analysis_list: list
+            A list of instances of Analysis objects that will be utilized within the optimization problem. Here, the objects that should be provided are the analyses that define the objective function and any constraint functions so that these can be declared for the optimization formulation. Other Analysis classes, such as those used as sub-analyses, do not need to be provided here, as they should be provided when creating the objects in the top-level analysis list
+        log_name : str
+            String that defines the name to use for the log file, defaults to 'flume.log'
+        log_prefix: str
+            String that defines the output directory where the log file and other files are saved, defaults to the current directory '.'
+        """
 
         # Store the name for the system
         self.sys_name = sys_name
@@ -317,7 +325,14 @@ class System:
 
     def declare_objective(self, global_obj_name, obj_scale=1.0):
         """
-        Sets the objective function for the optimization problem according to the provided global output name. Nominally, this output should be associated with one of the top-level analyses for the system (i.e. included in the analysis_list). The second argument, obj_scale, is a scaling factor that will be applied to the computed objective function value. The scaling factor should nominally scale the objective function value to O(1).
+        Sets the objective function for the optimization problem according to the provided global output name. This output should be associated with one of the top-level analyses for the system (i.e. included in the top_level_analysis_list).
+
+        Parameters
+        ----------
+        global_obj_name : str
+            A string that specifies the global name for the value that is to be used as the objective function (global name meaning 'object_name.local_output_name')
+        obj_scale : float
+            Float value that is *multiplied* by the value of the objective function, which should scale the objective function value to O(1). This is used by the optimizer interfaces internally to scale the objective.
         """
 
         # Using the provided objective name, store the associated analysis object and the local variable name
@@ -335,20 +350,15 @@ class System:
 
     def declare_constraints(self, global_con_name: dict):
         """
-        Sets the constraints for the optimization problem according to the provided global output names. Internally, constraints are restructured such that they are defined as:
-
-        c(x) >= 0.0,
-
-        but the user can specify the original direction and right-hand side value for the constraint.
+        Sets the constraints for the optimization problem according to the provided global output names.
 
         Parameters
         ----------
         global_con_name_dict : dict
             This is a dictionary of dictionaries. The keys correspond to the global output names for the constraints. The inner dictionary specifies additional information about the structure of the constriant, including the following:
 
-            * 'rhs' (float) - specifies the right hand side of the constraint equation. Internally, this will convert the constraint to an equivalent form that normalizes it, preserving the specified inequality direction. If the 'rhs' value is 0.0, no scaling is applied
-            * 'direction' (str) - default is assumed 'geq', which is >=, but the alternative is 'leq', <=
-
+            * 'rhs' (float) - specifies the right hand side of the constraint equation. Internally, the optimizer interfaces will use this to convert the constraint to an equivalent form that normalizes it, If the 'rhs' value is 0.0, no scaling is applied
+            * 'direction' (str) - string that is either 'geq' (>=), 'leq' (<=), or 'both' (=). Defaults to 'geq' in the event that a direction is not provided.
 
         Example
         -------
@@ -356,10 +366,12 @@ class System:
         Here, the constraints are defined as follows:
             x <= 1.0
             y >= 1.0
+            z = 2.0
 
         Thus, the argument here is given as: global_con_name = {
                                                     "block1.x":{"direction":"leq", "rhs":1.0},
                                                     "block2.y":{"rhs":1.0}
+                                                    "block3.z":{"direction": "both", "rhs": 2.0}
                                                     }
         """
 

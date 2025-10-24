@@ -265,8 +265,8 @@ class RosenbrockConstraint(Analysis):
         gb = self.outputs["g"].deriv
 
         # Add the contributions to xb and yb
-        xb += gb * 2 * x  # * -1.0
-        yb += gb * 2 * y  # * -1.0
+        xb += gb * 2 * x
+        yb += gb * 2 * y
 
         # Update the analyzed adjoint attribute
         self.adjoint_analyzed = True
