@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       debug_enabled:
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        description: "Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)"
         required: false
         default: false
 
@@ -20,38 +20,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@master
 
-    - name: Checkout
-      uses: actions/checkout@master
+      - name: Build site
+        run: |
+          source $CONDA/etc/profile.d/conda.sh;
+          echo $CONDA/bin >> $GITHUB_PATH;
+          conda create -n flumepage python=3.11
+          conda activate flumepage
+          conda install mamba=1.5.10 -c conda-forge
+          conda install libmamba -c conda-forge
+          pip install -r docs/source/requirements.txt
+          cd ../..
+          conda --version
+          sphinx-build -M html "docs/source" "docs/build"
 
-
-    - name: Build site
-      run: |
-        source $CONDA/etc/profile.d/conda.sh;
-        echo $CONDA/bin >> $GITHUB_PATH;
-        conda create -n flumepage python=3.11
-        conda activate flumepage
-        conda install mamba=1.5.10 -c conda-forge
-        conda install libmamba -c conda-forge
-        cd ../..
-        conda --version
-        mamba --version
-        empack --version
-        sphinx-build -M html "docs/source" "docs/build"
-
-    # - name: Upload artifact
-    #   uses: actions/upload-pages-artifact@v3
-    #   with:
-    #     path: './docs/build/html'
-    #
-    - name: Push artifact to pages-artifact branch
-      uses: s0/git-publish-subdir-action@develop
-      env:
-        REPO: self
-        BRANCH: pages-artifact
-        FOLDER: './docs/build/html'
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        MESSAGE: "Build: ({sha}) {msg}" # The commit message
+      # - name: Upload artifact
+      #   uses: actions/upload-pages-artifact@v3
+      #   with:
+      #     path: './docs/build/html'
+      #
+      - name: Push artifact to pages-artifact branch
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: pages-artifact
+          FOLDER: "./docs/build/html"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MESSAGE: "Build: ({sha}) {msg}" # The commit message
 
 
   # deploy:
