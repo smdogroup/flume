@@ -16,4 +16,4 @@ plot_flume_log = "flume.utils.plot_flume_log:main"
 where = ["."]
 
 [tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt]}
+dependencies = {file = ["requirements.txt"]}
