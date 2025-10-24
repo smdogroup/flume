@@ -10,13 +10,13 @@ authors:
     affiliation: 1
     corresponding: true
   - name: Graeme J. Kennedy
-    orcid:
+    orcid: 0000-0002-4223-3043
     affiliation: 1
 affiliations:
   - name: Georgia Institute of Technology, United States
     index: 1
     ror: 01zkghx44
-date: 9 October 2025
+date: 24 October 2025
 bibliography: paper.bib
 ---
 
@@ -243,29 +243,3 @@ x, res = interface.optimize_system(x0=x0, method="SLSQP")
 ```
 
 \normalsize
-
-<!-- NOTE: this was used for the grant proposal for Flume (unsure if this got submitted); not deleting this yet, but will likely not add to the paper. To further its development and ensure its applicability for an increased number of disciplines, we propose to extend Flume in two main areas: parallelism and remote procedure calls.
-While there are no inherent limitations that prevent a user from enabling parallelism within specific analyses, this has not been a development focus to date.
-However, to support large computing effort, we aim to implement and test parallel execution features.
-Additionally, since one of the primary benefits of Flume is the automatic management and communication between _Analysis_ instances in a _System_, it also lends itself to remote procedure calls.
-In scenarios where certain information or _Analysis_ instances can only be performed on secure machines but cannot be conducted entirely in this location, a remote procedure call is necessary and could be facilitated with a framework that automates data distribution.
-With these additional applications, the framework would be further equipped to solve a breadth of MDO problems that are discipline independent. -->
-
-<!-- # To-do List
-
-- DONE: Draft two paragraphs and potentially an image explaining Flume. Intent is to use this for the grant proposal, as well as the _Summary_ or _Statement of Need_ section for JOSS submission
-  - Should mention stuff about parallelism and remote procedures for the grant proposal version
-- TODO: Start to populate this file with the metadata for the JOSS submission
-- DONE: Document the code that has missing docstrings; ensure to follow the proper format with arguments, kwargs, etc.
-- DONE: Construct an interface between Flume and Scipy, which can be used upon installation of Flume (unlike ParOpt, which requires additional dependencies)
-- DONE: Implement a few more unittests that will perform optimization checks (for Rosenbrock and something else) and integration with Scipy minimize
-- DONE: update examples directory to reflect the current structure of the code; i.e. remove any examples that do not use updated Analysis/System classes; make sure that there are a few different examples covering a variety of disciplines
-    - examples to include: Hohmann transfer from OpenMDAO (opt), Rosenbrock (opt), multi-objective (demonstrating more complex system construction), COPS sphere problem (opt)
-- DONE: add beam example from OpenMDAO
-- DONE: add a script/jupyter notebook/something that details the useful helper methods and outlines how to start constructing a Flume example (want to incorporate adjoint test methods, network visualization, etc.)
-- TODO: update README.md with installation instructions, and point the user to various helpful portions of the documentation (e.g. new users check out the Jupyter notebook, for descriptive details point to the paper, etc.); make this homepage for the RTD
-- TODO: Documentation/RTD website page
-    - include the overview and methods files in the RTD page
-    - API
-- DONE: determine where to add info about SciPy and ParOpt interfaces
--->
