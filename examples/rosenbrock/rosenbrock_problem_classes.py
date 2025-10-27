@@ -89,10 +89,10 @@ class Rosenbrock(Analysis):
         a = self.parameters["a"]
         b = self.parameters["b"]
 
-        # Compute xb
+        # Compute contributions to xb
         xb += (2 * (a - x) * -1 + 2.0 * b * (y - x**2) * -2 * x) * fb
 
-        # Compute yb
+        # Compute contributions to yb
         yb += (2 * b * (y - x**2)) * fb
 
         # Update the analyzed adjoint attribute
@@ -193,7 +193,7 @@ class RosenbrockDVs(Analysis):
 class RosenbrockConstraint(Analysis):
     def __init__(self, obj_name: str, sub_analyses=[RosenbrockDVs], **kwargs):
         """
-        Analysis class that computes the value of the constraint function, which is used to constraint the design space to a circular region.
+        Analysis class that computes the value of the constraint function, which is used to constrain the design space to a circular region.
 
         Parameters
         ----------
