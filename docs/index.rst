@@ -8,6 +8,7 @@
    :maxdepth: 2
    :caption: Table of Contents:
    
+   source/README
    source/flume_overview
    source/analysis_methods_demo
    source/base_class_reference
