@@ -484,6 +484,8 @@ class FlumeScipyInterface:
         # Perform the adjoint analysis
         if self.method == "trust-constr" and not instance.analyzed:
             instance.analyze()
+        elif not instance.analyzed:
+            instance.analyze()
 
         instance.analyze_adjoint(debug_print=False)
 
