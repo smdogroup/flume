@@ -1,0 +1,114 @@
+/* Sidebar background and links */
+.wy-nav-side {
+  background-color: #efefef;
+}
+
+.wy-side-nav-search {
+  background-color: #4583bb;
+}
+
+.wy-nav-content-wrap {
+  background-color: #fcfcfc;
+}
+
+.wy-menu-vertical a {
+  color: #333333;
+  font-weight: bold;
+}
+
+.wy-menu-vertical a:visited {
+  color: #333333;
+  font-weight: bold;
+}
+
+.wy-menu-vertical a:hover {
+  background-color: #fcfcfc;
+  color: #c33100;
+}
+
+.wy-menu-vertical p.caption {
+  color: #333333; /* your desired color */
+  font-weight: bold; /* optional */
+}
+
+.wy-menu-vertical li.current a:hover {
+  color:#c33100;
+  background: #fcfcfc;
+}
+
+/* Main Icon */
+a.icon.icon-home {
+  color: #333333;
+  font-weight: bold;
+  font-style: italic;
+}
+
+/* Main content area */
+.wy-nav-content {
+  background: #fcfcfc;
+  color: #333333;
+}
+
+/* Top navbar repo button */
+.repo-button {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 0.3em 0.7em;
+    background-color: #fcfcfc; 
+    color: #c33100;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: normal;
+}
+
+.repo-button:hover {
+    background-color: #fcfcfc;
+    color: #c33100;
+}
+
+/* Links */
+a {
+  color: #c33100;
+}
+
+a:hover {
+  color: #005f99;
+}
+
+/* Prevent links from changing color after being clicked */
+a:visited {
+  color: #c33100;
+}
+
+/* Code blocks */
+code, pre {
+  background-color: #f5f5f5;
+  color: #333333;
+}
+
+
+/* Default */
+/* Sidebar background and links
+.wy-nav-side {
+  background-color: #1e1e2f;
+}
+
+.wy-side-nav-search, .wy-nav-content-wrap {
+  background-color: #282a36;
+}
+
+.wy-menu-vertical a {
+  color: #f8f8f2;
+}
+
+.wy-menu-vertical a:hover {
+  background-color: #44475a;
+  color: #50fa7b;
+}
+
+/* Main content area */
+/* .wy-nav-content {
+  background: #ffffff;
+  color: #333333;
+}
+

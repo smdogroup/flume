@@ -1,0 +1,12 @@
+{% extends "!layout.html" %}
+
+{% block breadcrumbs %}
+    {{ super() }}
+    <!-- Add your repository button -->
+    <a href="https://github.com/smdogroup/flume"
+       class="repo-button"
+       target="_blank"
+       rel="noopener">
+        GitHub Repository
+    </a>
+{% endblock %}
