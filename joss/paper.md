@@ -34,12 +34,12 @@ To utilize Flume, a user's primary responsibility is to construct the individual
 By adhering to a few architectural requirements when scripting these analyses, the framework's backend will automatically connect outputs to variables that share the same name.
 This provides the user with a streamlined workflow, enabling them to focus on implementing new features and procedures instead of managing the integration.
 
-The structure of _Flume_ is visualized in \autoref{fig:abstract*system}, which depicts an abstracted \_System* that encapsulates four distinct _Analysis_ objects.
-Arrows that connect _Analysis_ objects denote _State_ objects that connect outputs of one discipline to variables another.
+The structure of _Flume_ is visualized in \autoref{fig:abstractsystem}, which depicts an abstracted _System_ that encapsulates four distinct _Analysis_ objects.
+Arrows that link _Analysis_ objects denote _State_ objects that connect outputs of one discipline to variables another.
 _Analysis_ objects that are outlined in red and are labeled with "Top-level **_Analysis_** Object" are those that define output _States_ which are utilized for optimization.
 Thus, the arrows that extend beyond the _System_ boundary are _States_ that define design variables, the objective function, or constraint functions for an optimization problem that is wrapped within the framework.
 
-![Abstracted *System* that illustrates the structure of the framework. Here, *State*, *Analysis*, and *System* are emphasized to denote the use of the base classes provided within the library. Arrows extending beyond the boundary of the *System* denote quantities that are utilized for numerical optimization. \label{fig:abstract_system}](Images/Flume_DAG_Diagram.svg){width=100%}
+![Abstracted *System* that illustrates the structure of the framework. Here, *State*, *Analysis*, and *System* are emphasized to denote the use of the base classes provided within the library. Arrows extending beyond the boundary of the *System* denote quantities that are utilized for numerical optimization. \label{fig:abstractsystem}](Images/Flume_DAG_Diagram.svg){width=100%}
 
 # Statement of Need
 
@@ -52,7 +52,7 @@ While there are many MDO frameworks that have been developed since the late 20th
 - _ASTROS_: one of the first examples of MDO frameworks, _ASTROS_ performs preliminary structural design using numerical optimization based on the finite-element method [@astros]
 - _DAKOTA_: developed by Sandia National Laboratories, _DAKOTA_ is a software suite written in C++ that provides methods for a variety of analyses, including gradient-based and gradient-free optimization [@dakota]
 - _Isight_: a commercial tool by Dassault Systèmes that utilizes and object-oriented approach to connect a variety of simulation-based models [@isight]
-- _pyMDO_: an object-oriented solution written in Python, providing a means of defining MDO problems independently of the optimization algorithm used with the use of inheritance and operator overloading [@martins2009pymdo]
+- _pyOptSparse_: an object-oriented solution written in Python, designed for solving constrained nonlinear optimization problems with sparsity that also supports parallelism [@Wu2020pyoptsparse]
 - _OpenMDAO_: another open-source framework constructed within Python that utilizes gradient-based techniques for optimization of systems constructed with distinct components [@gray2019openmdao]
 
 As evident from this list, users are presented with many viable options to perform numerical optimization for their system of interest.
