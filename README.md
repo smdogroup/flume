@@ -19,10 +19,10 @@ python -m venv venv
 source venv/bin/activate
 ```
 
-Then, with the virtual environment activated, simply install the package from the GitHub repository with
+Then, with the virtual environment activated, simply install the package from PyPi with
 
 ```
-pip install git+https://github.com/smdogroup/flume.git
+pip install flume-smdo==1.0.2
 ```
 
 This will install the base classes, optimizer interfaces, and utilities into a Python package named "flume". For those who want to make changes to the code or access the unit tests and examples, you can also clone the repository and then install in editable mode.

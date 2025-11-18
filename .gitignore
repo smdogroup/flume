@@ -2,10 +2,11 @@
 __pycache__/
 examples/pyoptsparse_test.py
 venv/
-flume.egg-info/
+*.egg-info/
 flume_venv/
 *test_paropt/
 *.pdf
 *.log
 tests/rosenbrock_*/
 docs/_build/
+dist/*
