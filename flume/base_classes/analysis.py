@@ -19,6 +19,20 @@ class Analysis:
     """
 
     def __init__(self, obj_name: str, sub_analyses: list = [], **kwargs):
+        """
+        Base class construction for an instance of an Analysis object within the Flume framework.
+
+        Parameters
+        ----------
+        obj_name : str
+            Name for the analysis object, which should be unique among all Analysis objects that are included for a System
+        sub_analyses : list
+            A list of sub-analyses for the object, which will either be empty or contain other instances of objects that inherit from the Analysis base class
+
+        Keyword Arguments
+        -----------------
+        Here, **kwargs are keyword arguments that correspond to parameters that should be set for Analysis classes. There are no keyword arguments/parameters by default, but the user can alter this by creating the self.default_parameters dictionary in their class that inherits from the Analysis base class
+        """
 
         # Store the name for the property object
         self.obj_name = obj_name

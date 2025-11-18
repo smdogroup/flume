@@ -109,6 +109,7 @@ class System:
         filename: str = None,
         output_directory: str = None,
         interactive: bool = False,
+        format: str = "pdf",
     ):
         """
         Construct the visualization of the network associated with the Flume system using graphviz.
@@ -154,7 +155,12 @@ class System:
             graph = self._static_graph_network()
 
             # Render the graph
-            graph.render(filename=filename, directory=output_directory, cleanup=True)
+            graph.render(
+                filename=filename,
+                directory=output_directory,
+                cleanup=True,
+                format=format,
+            )
 
         return graph
 
