@@ -11,7 +11,12 @@ from math import exp
 
 class FirstBlock(Analysis):
 
-    def __init__(self, obj_name: str, sub_analyses=[], **kwargs):
+    def __init__(
+        self,
+        obj_name: str,
+        sub_analyses=[],
+        **kwargs,
+    ):
 
         # Set default parameters
         self.default_parameters = {}
@@ -355,7 +360,7 @@ class Constraint(Analysis):
         self,
         obj_name: str,
         sub_analyses=List[Union[Intermediate, Intermediate2]],
-        **kwargs
+        **kwargs,
     ):
 
         # Set default parameters

@@ -10,7 +10,7 @@ class TotalDeltaV(Analysis):
         self,
         obj_name: str,
         sub_analyses=List[Union[DeltaVAnalysis, DeltaVAnalysis]],
-        **kwargs
+        **kwargs,
     ):
         """
         DOCS:

@@ -16,7 +16,7 @@ class VCircAnalysis(Analysis):
         sub_analyses=List[Independents],
         variable_aliases=None,
         output_aliases=None,
-        **kwargs
+        **kwargs,
     ):
         """
         Analysis class for computing change in velocity of two orbits.

@@ -17,7 +17,7 @@ class TransferOrbitAnalysis(Analysis):
         sub_analyses=List[Independents],
         variable_aliases=None,
         output_aliases=None,
-        **kwargs
+        **kwargs,
     ):
         """
         Analysis clas for computing the velocities of the transfer orbit.
