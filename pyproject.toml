@@ -3,23 +3,29 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "flume"
-version = "0.2.0"
+name = "flume-smdo"
+version = "1.0.2"
 description = "A framework for performing forward and derivative analyses for systems following directed acylic graph structure."
 readme = "README.md"
 authors = [{ name = "Cameron Smith", email = "csmith763@gatech.edu" }]
-dependencies = [
-    "numpy>=1.24.4",
-    "black>=24.8.0",
-    "pre-commit>=3.5.0",
-    "graphviz>=0.20.1",
-    "icecream>=2.1.4",
-    "matplotlib",
+dynamic = ["dependencies"]
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE.txt"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
 ]
+
+[project.urls]
+Homepage = "https://github.com/smdogroup/flume"
+Documentation = "https://smdogroup.github.io/flume/"
+
+[tool.setuptools.dynamic]
+dependencies = { file = ["requirements.txt"] }
 
 [project.scripts]
 plot_flume_log = "flume.utils.plot_flume_log:main"
-
 
 [tool.setuptools.packages.find]
 where = ["."]

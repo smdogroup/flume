@@ -1,10 +1,20 @@
 from flume.base_classes.system import System
-from flume.interfaces.paropt_interface import FlumeParOptInterface
 from icecream import ic
-from paropt import ParOpt
 import numpy as np
 import unittest
-from tests.opt_problem_classes import Rosenbrock, RosenbrockConstraint, RosenbrockDVs
+from examples.rosenbrock.rosenbrock_problem_classes import (
+    Rosenbrock,
+    RosenbrockConstraint,
+    RosenbrockDVs,
+)
+
+try:
+    from paropt import ParOpt
+    from flume.interfaces.paropt_interface import FlumeParOptInterface
+except ModuleNotFoundError:
+    raise unittest.SkipTest(
+        "Skipping tests for ParOpt, as it was not found as an installed package."
+    )
 
 
 class TestUnconstrainedRosenbrock(unittest.TestCase):

@@ -1,25 +1,29 @@
-from paropt import ParOpt
-from mpi4py import MPI
 import os
 from flume.base_classes.system import System
 import numpy as np
 from icecream import ic
 
+try:
+    from paropt import ParOpt
+    from mpi4py import MPI
 
-class ParOptProb(ParOpt.Problem):
-    def __init__(self, comm, prob) -> None:
-        self.prob = prob
-        super(ParOptProb, self).__init__(comm, nvars=prob.ndvs, ncon=prob.ncon)
-        return
+    class ParOptProb(ParOpt.Problem):
+        def __init__(self, comm, prob) -> None:
+            self.prob = prob
+            super(ParOptProb, self).__init__(comm, nvars=prob.ndvs, ncon=prob.ncon)
+            return
 
-    def getVarsAndBounds(self, x, lb, ub):
-        return self.prob.getVarsAndBounds(x, lb, ub)
+        def getVarsAndBounds(self, x, lb, ub):
+            return self.prob.getVarsAndBounds(x, lb, ub)
 
-    def evalObjCon(self, x):
-        return self.prob.evalObjCon(x)
+        def evalObjCon(self, x):
+            return self.prob.evalObjCon(x)
 
-    def evalObjConGradient(self, x, g, A):
-        return self.prob.evalObjConGradient(x, g, A)
+        def evalObjConGradient(self, x, g, A):
+            return self.prob.evalObjConGradient(x, g, A)
+
+except ImportError:
+    pass
 
 
 class FlumeParOptInterface:
@@ -37,8 +41,8 @@ class FlumeParOptInterface:
         update : callable function, default None
             This is a callable function that gets executed at the start of every iteration of the evalObjCon method during optimization. Nominally, this is used to do parameter updates, such as for a continuation strategy
 
-        Callback Function
-        -----------------
+        Note
+        ----
         The callback function is an arbitrary function that the user writes, and it will be called during every evalObjCon execution. It is required that the function is setup such that it takes in two arguments:
 
         def user_callback(x, it_number):
@@ -123,6 +127,15 @@ class FlumeParOptInterface:
     def getVarsAndBounds(self, x, lb, ub):
         """
         Get the variable values and set the bounds for the optimization problem.
+
+        Parameters
+        ----------
+        x : ParOptVec
+            Design variable vector at the current iteration
+        lb : ParOptVec
+            Vector containing the lower bounds to apply to the design variables in x
+        ub : ParOptVec
+            Vector containing the ubber bounds to apply to the design variables in x
         """
 
         # Check to make sure that the design variable info has been set, otherwise raise an error
@@ -130,10 +143,6 @@ class FlumeParOptInterface:
             raise RuntimeError(
                 f"The design variables have not yet been declared for the system named '{self.flume_sys.sys_name},' so the bounds cannot be set. Ensure that the function 'declare_design_vars' has been called."
             )
-
-        # # Get the number of design variables for the problem, if necessary
-        # if not hasattr(self, "ndvs"):
-        #     self._set_ndvs()
 
         # Extract the design variable and bound values for each variable in the system
         tracked_dvs = 0
@@ -145,14 +154,6 @@ class FlumeParOptInterface:
             var_i = self.flume_sys.design_vars_info[var]["instance"].get_var_values(
                 variables=[local_name]
             )[local_name]
-
-            # ic(var_i)
-
-            # # Extract the number of design variables associated with the current variable
-            # if isinstance(var_i, float):
-            #     ndvs_i = 1
-            # elif isinstance(var_i, np.ndarray):
-            #     ndvs_i = np.size(var_i)
 
             # Set the value in the x PVec
             start = self.indices[var]["start"]
@@ -175,7 +176,14 @@ class FlumeParOptInterface:
 
     def set_system_variables(self, x, it_counter):
         """
-        Sets the variable values for the analysis objects contained within the system.
+        Sets the variable values for the analysis objects contained within the System.
+
+        Parameters
+        ----------
+        x : ParOptVec
+            Design variable vector at the current iteration
+        it_counter : int
+            Current iteration for the optimization
         """
 
         # Since system variables are being set, all analysis objects must be recomputed
@@ -211,6 +219,20 @@ class FlumeParOptInterface:
     def evalObjCon(self, x):
         """
         Evaluates the objective and constraints for the problem using the current design variables.
+
+        Parameters
+        ----------
+        x : ParOptVec
+            Design variable vector at the current iteration
+
+        Returns
+        -------
+        fail : int
+            Returns 0 if the method evaluates successfully
+        obj : float
+            Value of the objective function
+        con_list : list
+            List of the constraint values at the current design point
         """
 
         # print("\nCALLING EVALOBJCON")
@@ -222,8 +244,6 @@ class FlumeParOptInterface:
         # If the Flume system does not have an FOI attribute, set it
         if not hasattr(self.flume_sys, "foi"):
             self.flume_sys.declare_foi(global_foi_name=[])
-
-        # TODO: need to add a copy of the top-level analysis list here and remove the analyses after they are performed
 
         # Check to make sure that the objective analysis info has been set, otherwise raise an error
         if not hasattr(self.flume_sys, "obj_analysis"):
@@ -239,7 +259,6 @@ class FlumeParOptInterface:
 
         # Extract the objective function output
         self.obj_name = self.flume_sys.obj_local_name
-        # ic(self.flume_sys.obj_analysis.outputs)
         obj = (
             self.flume_sys.obj_analysis.outputs[self.obj_name].value
             * self.flume_sys.obj_scale
@@ -248,7 +267,6 @@ class FlumeParOptInterface:
         # Loop through each of the constraints and perform their respective analyses
         con_list = []
         for con in self.flume_sys.con_info:
-            # ic(con)
             # Perform the analysis for the current constraint function
             self.flume_sys.con_info[con]["instance"].analyze(debug_print=False)
 
@@ -256,8 +274,6 @@ class FlumeParOptInterface:
             con_name = self.flume_sys.con_info[con]["local_name"]
 
             con_val = self.flume_sys.con_info[con]["instance"].outputs[con_name].value
-
-            # ic(con_val)
 
             # Using the direction information about the constraint, set the normalized constraint value
             if self.flume_sys.con_info[con]["direction"] == "geq":
@@ -343,18 +359,27 @@ class FlumeParOptInterface:
     def evalObjConGradient(self, x, g, A):
         """
         Evaluates the objective and constraint gradients for the system.
-        """
 
-        # print("\nCALLING EVALOBJCONGRADIENT")
+        Parameters
+        ----------
+        x : ParOptVec
+            Design variable vector at the current iteration
+        g : ParOptVec
+            Gradient of the objective function at x
+        A : ParOptVec
+            Gradients of the constraints evaluated at x
+
+        Returns
+        -------
+        fail : int
+            Returns 0 if the method evaluates successfully
+        """
 
         # Check to make sure that the objective analysis info has been set, otherwise raise an error
         if not hasattr(self.flume_sys, "obj_analysis"):
             raise RuntimeError(
                 f"The objective information for the system named '{self.flume_sys.sys_name}' has not yet been declared, so evalObjCon can not be executed. Ensure that the function 'declare_objective' has been called."
             )
-
-        # # Set the variable values for the various analyses
-        # self.set_system_variables(x)
 
         # Compute the gradient of the objective function, where the seed value is set to 1.0 for the output of interest
         self.flume_sys.obj_analysis._add_output_seed(outputs=[self.obj_name], seed=1.0)
@@ -385,7 +410,6 @@ class FlumeParOptInterface:
         for con in self.flume_sys.con_info:
             # Extract the local name of the constraint
             con_name = self.flume_sys.con_info[con]["local_name"]
-            # ic(con_name)
 
             # Set the seed for the current constraint
             con_val = self.flume_sys.con_info[con]["instance"].outputs[con_name].value
@@ -420,8 +444,6 @@ class FlumeParOptInterface:
                     .variables[local_var_name]
                     .deriv
                 )
-
-                # ic(gradc_i)
 
                 # Assign the constraint gradient, accounting for the scaling, when necessary
                 if self.flume_sys.con_info[con]["direction"] == "geq":
@@ -490,9 +512,14 @@ class FlumeParOptInterface:
 
         return 0
 
-    def construct_paropt_problem(self) -> ParOptProb:
+    def construct_paropt_problem(self):
         """
         Function that creates the ParOpt problem that will be used for optimization
+
+        Returns
+        -------
+        paroptprob : ParOptProb
+            Returns an instance of the ParOptProb class
         """
 
         # Construct the ParOptProblem for the Flume system
@@ -503,6 +530,20 @@ class FlumeParOptInterface:
     def get_paropt_default_options(self, output_prefix, algorithm="tr", maxit=1000):
         """
         Get the default options for paropt.
+
+        Parameters
+        ----------
+        output_prefix : str
+            A string that specifies the directory where the output data should be stored
+        algorithm : str
+            String that specifies the method to use, defaults to 'tr' which is trust-region
+        maxit : int
+            Maximum number of iterations
+
+        Returns
+        -------
+        options : dict
+            A dictionary containing the options that can be passed to ParOpt
         """
 
         options = {

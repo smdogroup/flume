@@ -1,7 +1,8 @@
+# Description: this script defines an example that combines many different (albeit arbitrarily defined) Analysis classes into a System. The purpose of this example is to elaborate on how sub-analyses are defined between Analysis disciplines and illustrate the construction of a System. The system can be visualized using the graph_network method, as well. Optimization is not performed within this script, as this is more a demonstration of Analysis/System construction.
+
 from flume.base_classes.analysis import Analysis
 from flume.base_classes.state import State
 from flume.base_classes.system import System
-from flume.interfaces.paropt_interface import FlumeParOptInterface
 import numpy as np
 from icecream import ic
 from typing import List, Union
@@ -10,7 +11,12 @@ from math import exp
 
 class FirstBlock(Analysis):
 
-    def __init__(self, obj_name: str, sub_analyses=[], **kwargs):
+    def __init__(
+        self,
+        obj_name: str,
+        sub_analyses=[],
+        **kwargs,
+    ):
 
         # Set default parameters
         self.default_parameters = {}
@@ -354,7 +360,7 @@ class Constraint(Analysis):
         self,
         obj_name: str,
         sub_analyses=List[Union[Intermediate, Intermediate2]],
-        **kwargs
+        **kwargs,
     ):
 
         # Set default parameters
@@ -490,16 +496,3 @@ if __name__ == "__main__":
     sys.declare_constraints(
         global_con_name={"con.c": {"rhs": 10.0, "direction": "leq"}}
     )
-
-    interface = FlumeParOptInterface(flume_sys=sys)
-
-    # Construct the paropt problem for the Flume system
-    paroptprob = interface.construct_paropt_problem()
-    options = interface.get_paropt_default_options(
-        output_prefix="examples/multi_objective/test_paropt"
-    )
-
-    for i in range(5):
-        paroptprob.checkGradients(1e-6)
-
-    # multi.analyze()

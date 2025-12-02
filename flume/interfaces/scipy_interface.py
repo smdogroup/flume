@@ -6,9 +6,18 @@ from icecream import ic
 
 class FlumeScipyInterface:
 
-    def __init__(self, flume_sys: System, callback=None, update=None):
+    def __init__(self, flume_sys: System, callback=None):
         """
-        DOCS:
+        Creates an interface that is used to link an instance of a Flume System to SciPy's optimize minimize function to perform numerical optimization.
+
+        Parameters
+        ----------
+        flume_sys : System
+            Instance of a Flume System that represents the problem to be solved with ParOpt
+        callback : callable function, default None
+            This is a callable function that gets executed during every iteration of the evalObjCon method during optimization. See below for the structure of the function
+        update : callable function, default None
+            This is a callable function that gets executed at the start of every iteration of the evalObjCon method during optimization. Nominally, this is used to do parameter updates, such as for a continuation strategy
         """
 
         # Store the flume system as an attribute
@@ -16,9 +25,6 @@ class FlumeScipyInterface:
 
         # Store the callback function
         self.callback = callback
-
-        # Store the update function
-        self.update = update
 
         # Store the string that declares the optimizer
         self.optimizer = "paropt"
@@ -94,6 +100,16 @@ class FlumeScipyInterface:
     def _get_dv_bounds(self, x):
         """
         Sets the bounds for the design variables contained in x based on the information associated with the Flume system. Returns a SciPy optimize 'Bounds' object.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            NumPy array of the current design variable values
+
+        Returns
+        -------
+        bounds : instance of scipy.optimize.Bounds object
+            Bounds object from SciPy that specifies the variable bounds
         """
 
         # Initialize the lb and ub objects, which by default have no lower/upper bound
@@ -126,13 +142,13 @@ class FlumeScipyInterface:
 
         return bounds
 
-    def set_system_variables(self, x, it_counter):
+    def _set_system_variables(self, x, it_counter):
         """
         Sets the variable values for the analysis objects contained within the system.
         """
 
         # Since system variables are being set, all analysis objects must be recomputed
-        self.flume_sys.reset_analysis_flags(it_counter)
+        self.flume_sys.reset_analysis_flags(it_counter - 1)
 
         # Loop through the design variables for the system and set for their components
         for var in self.flume_sys.design_vars_info:
@@ -161,15 +177,51 @@ class FlumeScipyInterface:
 
         return
 
+    def set_initial_point(self, initial_global_vars: dict):
+        """
+        Helper function that maps the design variables provided in the initial_global_vars dictionary to the array that SciPy expects for the initial point.
+
+        Parameters
+        ----------
+        initial_global_vars : dict
+            Dictionary, where each key-value pair corresponds to a global variable name in the Flume system and its corresponding numeric value. E.g. for a variable named 'x' with initial value 1 associated with an object named 'rosenbrock', the entry in this dictionary is 'rosenbrock.x': 1.0.
+
+        Returns
+        -------
+        x0 : np.ndarray
+            NumPy array that contains the values provided in the initial_global_vars dictionary, organized according to the start/end indices for each variable.
+        """
+
+        # Initialize the x0 array
+        x0 = np.zeros(self.ndvs)
+
+        # Loop through each variable in the global_vars dictionary and map the values into the x vector, which is the design variable vector SciPy expects
+        for var in initial_global_vars:
+            # Get the indices for the current variable
+            start = self.indices[var]["start"]
+            end = self.indices[var]["end"]
+
+            # Assign the value for var into x
+            x0[start:end] = initial_global_vars[var]
+
+        return x0
+
     def _objective_func(self, x, method):
         """
         Computes the objective function value for the system using the current values for the design variables, x.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            NumPy array of the current design variable values
+        method : str
+            String that specifies the method used for the optimization
+
+        Returns
+        -------
+        obj : float
+            Objective function value
         """
-
-        # Call the update function, if it was provided
-        if self.update is not None:
-            self.update(it_num=self.it_counter)
-
         # Check to make sure that the objective analysis info has been set, otherwise raise an error
         if not hasattr(self.flume_sys, "obj_analysis"):
             raise RuntimeError(
@@ -177,7 +229,7 @@ class FlumeScipyInterface:
             )
 
         # Set the variable values for the various analyses
-        self.set_system_variables(x, self.it_counter)
+        self._set_system_variables(x, self.it_counter)
 
         # Perform the analysis for the objective function
         self.flume_sys.obj_analysis.analyze(debug_print=False)
@@ -189,11 +241,7 @@ class FlumeScipyInterface:
             * self.flume_sys.obj_scale
         )
 
-        # Update the iteration counter
-        self.it_counter += 1
-
         if method == "trust-constr":
-            print("hello")
             _ = self._constraint_funcs(x, method)
 
         return obj
@@ -201,6 +249,18 @@ class FlumeScipyInterface:
     def _grad_objective_func(self, x, method):
         """
         Evaluates the gradient of the objective function for the system
+
+        Parameters
+        ----------
+        x : np.ndarray
+            NumPy array of the current design variable values
+        method : str
+            String that specifies the method used for the optimization
+
+        Returns
+        -------
+        g : np.ndarray
+            Array that contains the gradient of the objective function evaluated at the current design point
         """
 
         # Check to make sure that the objective analysis info has been set, otherwise raise an error
@@ -241,6 +301,18 @@ class FlumeScipyInterface:
     def _constraint_funcs(self, x, method):
         """
         Computes the constraint function values for the system using the current values for the design variables, x.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            NumPy array of the current design variable values
+        method : str
+            String that specifies the method used for the optimization
+
+        Returns
+        -------
+        con_list : list
+            List of the constraint values for the Flume system.
         """
 
         # Detect the method used for the optimization
@@ -252,13 +324,9 @@ class FlumeScipyInterface:
             # Set the boolean flag for detecting the method type
             dict_method = False
 
-            if method == "trust-constr":
-                raise NotImplementedError(
-                    f"Method '{method}' has not been implemented yet."
-                )
         else:
             raise RuntimeError(
-                f"The provided method '{method}' is not supported with constraints with SciPy optimize minimize. Valid options are 'COBYLA', 'COBYQA', 'SLSQP', and 'trust-constr' (note trust-constr not implemented yet)."
+                f"The provided method '{method}' is not supported with constraints with SciPy optimize minimize. Valid options are 'COBYLA', 'COBYQA', 'SLSQP', and 'trust-constr'."
             )
 
         # Loop through each of the constraints and perform their respective analyses
@@ -270,7 +338,7 @@ class FlumeScipyInterface:
             # Get the constraint type for SciPy
             if con_i_info["direction"] == "geq" or con_i_info["direction"] == "leq":
                 con_type = "ineq"
-            elif con_i_info["direciton"] == "both":
+            elif con_i_info["direction"] == "both":
                 con_type = "eq"
             else:
                 raise RuntimeError(
@@ -304,7 +372,19 @@ class FlumeScipyInterface:
 
     def _constraint_wrapper(self, x, con_i_info: dict):
         """
-        DOCS:
+        Function that is used to wrap the Flume constraint into a callable form that SciPy expects.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            NumPy array of the current design variable values
+        con_i_info: dict
+            Dictionary that contains the instance, direction, right-hand side, and local name info for the current constraint. This information is provided by the user when declaring constraints for the Flume System.
+
+        Returns
+        -------
+        con_val : float or np.ndarray
+            The constraint value at the current design point.
         """
 
         # Extract the instance, direction, and rhs value associated with the constraint
@@ -362,7 +442,19 @@ class FlumeScipyInterface:
 
     def _constraint_jac_wrapper(self, x, con_i_info: dict):
         """
-        DOCS:
+        Function that is used to wrap the Jacobian of the constraints into a callable form that SciPy expects.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            NumPy array of the current design variable values
+        con_i_info: dict
+            Dictionary that contains the instance, direction, right-hand side, and local name info for the current constraint. This information is provided by the user when declaring constraints for the Flume System.
+
+        Returns
+        -------
+        jac : float or np.ndarray
+            The constraint Jacobian evaluated at the current design point.
         """
 
         # Extract the instance, direction, and rhs value associated with the constraint
@@ -390,6 +482,11 @@ class FlumeScipyInterface:
         instance._add_output_seed(outputs=[local_name], seed=seed)
 
         # Perform the adjoint analysis
+        if self.method == "trust-constr" and not instance.analyzed:
+            instance.analyze()
+        elif not instance.analyzed:
+            instance.analyze()
+
         instance.analyze_adjoint(debug_print=False)
 
         # Initialize the constraint Jacobian
@@ -450,25 +547,117 @@ class FlumeScipyInterface:
 
         return jac
 
-    def get_default_options(self, maxit=100):
+    def get_default_options(self, method, maxit=100):
         """
         Get the dictionary of default options that are used when calling SciPy minimize.
+
+        Parameters
+        ----------
+        method : str
+            String that specifies the method used for the optimization
+        maxit : int
+            Maximum number of iterations for the optimization problem
+
+        Returns
+        -------
+        options : dict
+            Dictionary of default options for the optimization.
         """
 
         # Construct the dictionary with the default options
-        options = {"disp": True, "maxiter": maxit, "ftol": 1e-10, "verbose": 2}
+        if method == "trust-constr":
+            options = {"disp": False, "maxiter": maxit, "gtol": 1e-10, "verbose": 0}
+        else:
+            options = {"disp": False, "maxiter": maxit, "ftol": 1e-10, "verbose": 0}
 
         return options
+
+    def _callback_func(self, x):
+        """
+        Callback function to use that only takes in one argument, the current design variables, x.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            NumPy array of the current design variable values
+        """
+
+        # Log the current iteration info
+        self.flume_sys.log_information(iter_number=self.it_counter)
+
+        # Update the iteration counter
+        self.it_counter += 1
+
+        return
+
+    def _callback_func_trust_constr(self, x, state):
+        """
+        Callback function to use that only takes in two arguments, the current design variables, x, and state, which is an intermediate OptimizeResult.
+
+        Parameters
+        ----------
+        x : np.ndarray
+            NumPy array of the current design variable values
+        state : SciPy OptimizeResult
+            Instance of SciPy OptimizeResult, which is an intermediate result of the optimization procedure. More info can be found in SciPy documentation.
+        """
+
+        # Log the current iteration info
+        self.flume_sys.log_information(iter_number=self.it_counter)
+
+        # Update the iteration counter
+        self.it_counter += 1
+
+        return
 
     def optimize_system(self, x0, options=None, method="SLSQP", maxit=100):
         """
         Function that the user calls to execute SciPy's optimize minimize function.
+
+        Parameters
+        ----------
+        x0 : np.ndarray
+            Initial point for the optimization procedure
+        options : None or dict
+            Default is None, otherwise this is a dictionary of options to provide to the minimize function
+        method : str
+            String that specifies the method used for the optimization, defaults to SLSQP
+        maxit : int
+            Maximum number of iterations for the optimization problem, defaults to 100
+        callback_func : callable function
+            Optional callable function that the user can provide to override the default callback function, which calls Flume's default log function after each iteration.
+
+        Returns
+        -------
+        res.x : np.ndarray
+            Solution array after the optimization
+        res : SciPy OptimizeResult
+            OptimizeResult instance from the numerical optimization (see SciPy documentation for additional details)
         """
 
+        # Store the method used
+        self.method = method
+
         # Get the default options if the user did not provide any
-        if options is not None:
-            options = self.get_default_options(maxit=maxit)
+        if options is None:
+            options = self.get_default_options(maxit=maxit, method=method)
             pass
+
+        # Set the callback function to the user-defined function, if provided
+        if self.callback is not None:
+            callback = self.callback
+        # Otherwise, use the default callback functions
+        else:
+            if method == "trust-constr":
+                callback = self._callback_func_trust_constr
+            else:
+                callback = self._callback_func
+
+        # Set the value for the Hessian information
+        if method == "trust-constr":
+            hess = SR1()
+        else:
+            hess = "None"
 
         # Call the minimize function for the system
         res = minimize(
@@ -480,6 +669,8 @@ class FlumeScipyInterface:
             constraints=self._constraint_funcs(x0, method),
             options=options,
             method=method,
+            callback=callback,
+            hess=hess,
         )
 
         return res.x, res
