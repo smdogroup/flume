@@ -2,22 +2,20 @@ import numpy as np
 import warnings
 from flume.base_classes.state import State
 import time
-
+import jax
+import jax.numpy as jnp
 
 # Define the default warning format
 def custom_formatwarning(msg, *args, **kwargs):
     return str(msg) + "\n"
 
-
 # Set the default warning format
 warnings.formatwarning = custom_formatwarning
-
 
 class Analysis:
     """
     This is a base class for all derived analysis classes that establishes a set of common methods. For the variables and outputs that are stored as attributes of the class, data is stored in dictionaries with key-value pairs structured as "variable/output name" : State object that describes the variable/output.
     """
-
     def __init__(self, obj_name: str, sub_analyses: list = [], **kwargs):
 
         # Store the name for the property object
@@ -25,7 +23,6 @@ class Analysis:
 
         # Store the list of sub-analyses for the object
         self.sub_analyses = sub_analyses
-
         # Record arguments from the initialization
         self._log = {}
         self._log["init_args"] = {}
@@ -67,6 +64,8 @@ class Analysis:
         # Call the method that checks whether the current object has all required user-defined methods
         self.has_methods = self._check_methods()
 
+        self.outputs = {}
+
     def _check_methods(self) -> bool:
         """
         Private method that is always called for all instances of an AnalysisBase class. This ensures that any derived classes contain an _analyze method, which is unique for each derived class.
@@ -85,6 +84,9 @@ class Analysis:
         if not (
             hasattr(self.__class__, "_analyze")
             and callable(getattr(self.__class__, "_analyze"))
+        ) and not (
+            hasattr(self.__class__, "callable_analyze")
+            and callable(getattr(self.__class__, "callable_analyze"))
         ):
             raise AttributeError(
                 f"The class {self.__class__.__name__} does not have a method named '_analyze', which is a required method. \n"
@@ -130,12 +132,12 @@ class Analysis:
 
     def set_var_values(self, variables: dict):
         """
-        Sets the values for the varaibles based on the entries contained in the variables dictionary
+        Sets the values for the variables based on the entries contained in the variables dictionary
 
         Parameters
         ----------
         variables: dict
-            A dictionary that is structued with key-value pairs, where the key is the local name of the variable and the value is the numerical value to set for the variable.
+            A dictionary that is structured with key-value pairs, where the key is the local name of the variable and the value is the numerical value to set for the variable.
 
         Returns
         -------
@@ -167,7 +169,6 @@ class Analysis:
                         hasattr(self.variables[var], "shape")
                         and np.shape(variables[var]) != self.variables[var].shape
                     ):
-
                         raise ValueError(
                             f"Provided shape of {np.shape(variables[var])} for variable '{var}' does not match expected shape of {self.variables[var].shape}."
                         )
@@ -255,10 +256,8 @@ class Analysis:
 
         # Loop through the variables provided in the input and add to the design_vars list (also checking to make sure no extra/incorrect vars are provided)
         for var in variables:
-
             if var not in self.variables:
                 var_keys = self.variables.keys()
-
                 raise ValueError(
                     f"Variable {var} is not a valid variable for object {self.__class__.__name__} named '{self.obj_name}'. Valid variables are {[key for key in var_keys]}."
                 )
@@ -489,6 +488,89 @@ class Analysis:
 
         return
 
+    def callable_wrapper(self):
+        """
+        Analyze the user-defined function "callable_analyze" to find outputs and reverse propagated gradient.
+        """
+        # Extract the variable values
+        self.cw_vars = []
+        for i_vars in self.variables:
+            self.cw_vars.append(self.variables[i_vars].value)
+
+        # Extract the parameter values
+        self.cw_pars = []
+        for i_pars in self.parameters:
+            self.cw_pars.append(self.parameters[i_pars])
+
+        # Evaluate the local output values
+        if any (self.cw_pars):
+            cw_outputs = self.callable_analyze(self.cw_vars, self.cw_pars)
+        else:
+            cw_outputs = self.callable_analyze(self.cw_vars)
+        if not isinstance(cw_outputs, tuple):
+            cw_outputs = (cw_outputs,)
+
+        # Solve for callable gradient of "callable_analyze"
+        if not hasattr(self, "cw_grad"):
+            self.cw_grad = jax.jacrev(self.callable_analyze,argnums=0)
+
+        # Create dictionary for global outputs
+        self.outputs = {}
+
+        # Raise error if the number of descriptions and outputs do not match
+        if len(self.ca_descs) != len(cw_outputs):
+            raise RuntimeError(f"ca_descs and cw_outputs must have the same length. \n  {self.ca_descs} vs {cw_outputs}")
+
+        # Set local outputs as the global outputs with the appropriate descriptions
+        for i,ca_name in enumerate(self.ca_descs):
+            self.outputs[ca_name] = State(value=cw_outputs[i],desc=self.ca_descs[ca_name],source=self)
+
+        # Clarify that analysis has been completed
+        self.analyzed = True
+        return
+
+    def adjoint_wrapper(self):
+        """
+        Utilize JAX to solve adjoint method for the output derivatives.
+        """
+        # Solve for gradient of objective function if not defined prior
+        if not hasattr(self, "cw_grad"):
+            self.cw_grad = jax.jacrev(self.callable_analyze,argnums=0)
+
+        # Re-extract local variable values
+        aw_vars = []
+        for i_vars in self.variables:
+            aw_vars.append(self.variables[i_vars].value)
+
+        # Evaluate gradient at the existing point
+        if any (self.cw_pars):
+            grad_aw = np.array(self.cw_grad(aw_vars, self.cw_pars))
+        else:
+            grad_aw = np.array(self.cw_grad(aw_vars))
+
+        # Perform adjoint method to evaluate output derivatives
+        for i,out in enumerate(self.outputs):
+            outb = self.outputs[out].deriv
+
+            # Extract gradients of each output
+            grad_out = grad_aw[i]
+            if len(self.variables.keys()) > 1:
+                for j,var in enumerate(self.variables):
+                    # Extract individual gradient of each variable
+                    if grad_out.size > 1:
+                        grad_i = grad_out[j]
+                    else:
+                        grad_i = grad_out
+                    self.variables[var].deriv += outb*grad_i
+            else:
+                key_aw = list(self.variables.keys())[0]
+                self.variables[key_aw].deriv = outb * grad_out
+
+        # Clarify that adjoint analysis has been completed
+        self.adjoint_analyzed = True
+
+        return
+
     def analyze(self, mode="real", debug_print=False):
         """
         Performs the analysis procedure for the object after combining the objects into a list that contains the stack. For each analysis in the stack, connections are established between sub-analyses and primary-analyses and then the private _analyze method is called.
@@ -528,7 +610,10 @@ class Analysis:
             # Perform the analysis for each object in the stack
             if not analysis.analyzed:
                 start = time.time()
-                analysis._analyze()
+                if hasattr(analysis,"callable_analyze"):
+                    analysis.callable_wrapper()
+                else:
+                    analysis._analyze()
                 end = time.time()
 
                 analysis_time = end - start
@@ -597,7 +682,10 @@ class Analysis:
         for analysis in self.forward_stack[::-1]:
 
             start = time.time()
-            analysis._analyze_adjoint()
+            if hasattr(analysis,"callable_analyze"):
+                analysis.adjoint_wrapper()
+            else:
+                analysis._analyze_adjoint()
             end = time.time()
 
             adjoint_time = end - start
@@ -979,7 +1067,10 @@ class Analysis:
             )
 
         # Analyze the system
-        self._analyze()
+        if hasattr(self,"callable_analyze"):
+            self.callable_wrapper()
+        else:
+            self._analyze()
         outs0 = self.get_output_values()
 
         if debug_print:
@@ -997,7 +1088,10 @@ class Analysis:
         out_seeds = self.seeds
 
         # Perform the adjoint analysis
-        self._analyze_adjoint()
+        if hasattr(self,"callable_analyze"):
+            self.adjoint_wrapper()
+        else:
+            self._analyze_adjoint()
 
         # Extract the derivative values from the outputs after the first analysis
         out_derivs = {}
@@ -1022,13 +1116,13 @@ class Analysis:
         for var in deriv_vals:
 
             # Compute the contribution to the exact derivative for the current variable
-            if isinstance(def_var_values[var], np.ndarray):
+            if isinstance(def_var_values[var], np.ndarray) or isinstance(def_var_values[var], jnp.ndarray):
                 if deriv_vals[var].ndim == 2:
                     contr = np.dot(perts["pert_" + var], deriv_vals[var].flatten())
                 else:
                     contr = np.dot(perts["pert_" + var], deriv_vals[var])
             else:
-                contr = np.dot(perts["pert_" + var], deriv_vals[var])
+                contr = np.dot(perts["pert_" + var], deriv_vals[var].flatten())
 
             # Add the contribution for the current variable to the total value
             ans_tot += contr
@@ -1111,7 +1205,10 @@ class Analysis:
         # Compute the outputs using the perturbed values
         self._initialize_analysis(mode=mode)
 
-        self._analyze()
+        if hasattr(self,"callable_analyze"):
+            self.callable_wrapper()
+        else:
+            self._analyze()
 
         # Extract the perturbed output values
         outs = self.get_output_values()
