@@ -36,7 +36,7 @@ This provides the user with a streamlined workflow, enabling them to focus on im
 
 The structure of _Flume_ is visualized in \autoref{fig:abstractsystem}, which depicts an abstracted _System_ that encapsulates four distinct _Analysis_ objects.
 Arrows that link _Analysis_ objects denote _State_ objects that connect outputs of one discipline to variables another.
-_Analysis_ objects that are outlined in red and are labeled with "Top-level **_Analysis_** Object" are those that define output _States_ which are utilized for optimization.
+_Analysis_ objects that are outlined in red and are labeled with "Top-level **_Analysis_** Object" are those that define output _States_ that are utilized for optimization.
 Thus, the arrows that extend beyond the _System_ boundary are _States_ that define design variables, the objective function, or constraint functions for an optimization problem that is wrapped within the framework.
 
 ![Abstracted *System* that illustrates the structure of the framework. Here, *State*, *Analysis*, and *System* are emphasized to denote the use of the base classes provided within the library. Arrows extending beyond the boundary of the *System* denote quantities that are utilized for numerical optimization. \label{fig:abstractsystem}](Images/Flume_DAG_Diagram.svg){width=100%}
@@ -51,7 +51,7 @@ While there are many MDO frameworks that have been developed since the late 20th
 
 - _ASTROS_: one of the first examples of MDO frameworks, _ASTROS_ performs preliminary structural design using numerical optimization based on the finite-element method [@astros]
 - _DAKOTA_: developed by Sandia National Laboratories, _DAKOTA_ is a software suite written in C++ that provides methods for a variety of analyses, including gradient-based and gradient-free optimization [@dakota]
-- _Isight_: a commercial tool by Dassault Systèmes that utilizes and object-oriented approach to connect a variety of simulation-based models [@isight]
+- _Isight_: a commercial tool by Dassault Systèmes that utilizes an object-oriented approach to connect a variety of simulation-based models [@isight]
 - _pyOptSparse_: an object-oriented solution written in Python, designed for solving constrained nonlinear optimization problems with sparsity that also supports parallelism [@Wu2020pyoptsparse]
 - _OpenMDAO_: another open-source framework constructed within Python that utilizes gradient-based techniques for optimization of systems constructed with distinct components [@gray2019openmdao]
 
@@ -69,10 +69,10 @@ These interfaces provide the means of connecting a _System_ to an optimizer that
 
 To date, the framework has primarily been tested for two applications beyond the simpler examples provided within the repository to detail the construction of _Analysis_ disciplines and _System_ architectures.
 In a nascent stage, it was utilized to perform optimization under uncertainty for a next-generation Mars helicopter.
-While the core functionality of the framework remains the same, the changes to the _Analysis_ and addition of the _System_ base classes cause this example to be out of date.
+While the core functionality of the framework remains the same, the changes to the _Analysis_ base class and addition of the _System_ base class cause this example to be out of date.
 Now, _Flume_ has primarily been tested in the field of topology optimization, with specific applications for initial post-buckling behavior and inverse design problems.
 The network complexity of these systems, specifically regarding the flow of information between distinct analyses, emphasizes the importance of a tool like _Flume_.
-Both of these demonstrations were instrumental in designing the framework and ultimately has resulted in its present state, and publications on both of these topics are in preparation for submission.
+Both of these demonstrations were instrumental in designing the framework and ultimately has resulted in its present state, and publications on both of these topology optimization applications are in preparation for submission.
 The representative _System_ diagrams and examples of the topology optimization formulations applied to a sample domain are given for the inverse design and post-buckling problems in \autoref{fig:inverse_design} and \autoref{fig:post_buckling}, respectively.
 
 ![Demonstration of *Flume* applied to topology optimization for inverse design with natural frequency applications. \label{fig:inverse_design}](Images/Inverse_Design_Sample.svg){width=100%}
@@ -180,13 +180,13 @@ class Rosenbrock(Analysis):
 \normalsize
 
 The _Analysis_ classes that define the design variables and compute the constraint function are similar in structure to the one above.
-Next, the section below outlines how the user sets up a _System_ and performs an optimization by utilizing the _FlumeSciPyInterface_.
+Next, the section below outlines how the user sets up a _System_ and performs an optimization by utilizing the _FlumeScipyInterface_.
 Again, a few salient points are enumerated regarding the code's structure and syntax.
 
 - Instances for the _RosenbrockDVs_, _Rosenbrock_ and _RosenbrockConstraint_ objects are each constructed. Here, the instance for _RosenbrockDVs_ is passed as a sub-analysis to the _Rosenbrock_ and _RosenbrockConstraint_ objects during construction, which establishes a connection between the _State_ objects for _x_ and _y_. This ensures that the same values are used when computing the objective and constraint functions, and provides paths that trace back to the same set of design variables.
 - The _System_ is constructed, where the top-level analyses are provided as a list. Effectively, this list defines the _Analysis_ objects that are responsible for computing the objective and constraints for the optimization problem. Any sub-analyses are not required to be provided here, as this information is encoded within the object construction for the top-level analyses.
 - The design variables, objective, and constraints are all declared for the _System_, which is stored and accessed when defining the optimization problem. Here, these quantities are declared by using the global names, which are given by _obj_name.local_name_. The user can also provide information for design variable bounds and constraint direction and right-hand side values.
-- Finally, in this example, the _FlumeScipyInterface_ is utilized to formulate an optimization problem using the design variable, objective, and constraints declared for the _System_. This interface internally wraps SciPy's optimize minimize function, and the method and options can be controlled by the user.
+- Finally, in this example, the _FlumeScipyInterface_ is utilized to formulate an optimization problem using the design variable, objective, and constraints declared for the _System_. This interface internally wraps SciPy optimize's `minimize` function, and the method and options can be controlled by the user.
 
 \small
 
