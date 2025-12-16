@@ -13,7 +13,19 @@ class TotalDeltaV(Analysis):
         **kwargs,
     ):
         """
-        DOCS:
+        Analysis class for computing the total velocity change associated with two orbital maneuvers.
+
+        Parameters
+        ----------
+        obj_name : str
+            Name for the analysis object
+        sub_analyses : list
+            A list of any sub-analyses for TotalDeltaV, which nominally contains two instances of the DeltaVAnalysis class to define the Hohmann transfer procedure.
+
+        Keyword Arguments
+        -----------------
+        No input parameters for this object, so no **kwargs.
+
         """
 
         # Set the default parameters
