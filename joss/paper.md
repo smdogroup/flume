@@ -35,8 +35,8 @@ By adhering to a few architectural requirements when scripting these analyses, t
 This provides the user with a streamlined workflow, enabling them to focus on implementing new features and procedures instead of managing the integration.
 
 The structure of _Flume_ is visualized in \autoref{fig:abstractsystem}, which depicts an abstracted _System_ that encapsulates four distinct _Analysis_ objects.
-Arrows that link _Analysis_ objects denote _State_ objects that connect outputs of one discipline to variables of another.
-_Analysis_ objects that are outlined in red and are labeled with "Top-level **_Analysis_** Object" are those that define output _States_ which are utilized for optimization.
+Arrows that link _Analysis_ objects denote _State_ objects that connect outputs of one discipline to variables another.
+_Analysis_ objects that are outlined in red and are labeled with "Top-level **_Analysis_** Object" are those that define output _States_ that are utilized for optimization.
 Thus, the arrows that extend beyond the _System_ boundary are _States_ that define design variables, the objective function, or constraint functions for an optimization problem that is wrapped within the framework.
 
 ![Abstracted *System* that illustrates the structure of the framework. Here, *State*, *Analysis*, and *System* are emphasized to denote the use of the base classes provided within the library. Arrows extending beyond the boundary of the *System* denote quantities that are utilized for numerical optimization. \label{fig:abstractsystem}](Images/Flume_DAG_Diagram.svg){width=100%}
@@ -51,7 +51,7 @@ While there are many MDO frameworks that have been developed since the late 20th
 
 - _ASTROS_: one of the first examples of MDO frameworks, _ASTROS_ performs preliminary structural design using numerical optimization based on the finite-element method [@astros]
 - _DAKOTA_: developed by Sandia National Laboratories, _DAKOTA_ is a software suite written in C++ that provides methods for a variety of analyses, including gradient-based and gradient-free optimization [@dakota]
-- _Isight_: a commercial tool by Dassault Systèmes that utilizes and object-oriented approach to connect a variety of simulation-based models [@isight]
+- _Isight_: a commercial tool by Dassault Systèmes that utilizes an object-oriented approach to connect a variety of simulation-based models [@isight]
 - _pyOptSparse_: an object-oriented solution written in Python, designed for solving constrained nonlinear optimization problems with sparsity that also supports parallelism [@Wu2020pyoptsparse]
 - _OpenMDAO_: another open-source framework constructed within Python that utilizes gradient-based techniques for optimization of systems constructed with distinct components [@gray2019openmdao]
 
@@ -72,7 +72,7 @@ In a nascent stage, it was utilized to perform optimization under uncertainty fo
 While the core functionality of the framework remains the same, the changes to the _Analysis_ and addition of the _System_ base classes cause this example to be out of date, which is why it has not been included in the repository.
 Now, _Flume_ has primarily been tested in the field of topology optimization, with specific applications for initial post-buckling behavior and inverse design problems.
 The network complexity of these systems, specifically regarding the flow of information between distinct analyses, emphasizes the importance of a tool like _Flume_.
-Both of these demonstrations were instrumental in designing the framework and ultimately has resulted in its present state, and publications on both of these topics are in preparation for submission.
+Both of these demonstrations were instrumental in designing the framework and ultimately has resulted in its present state, and publications on both of these topology optimization applications are in preparation for submission.
 The representative _System_ diagrams and examples of the topology optimization formulations applied to a sample domain are given for the inverse design and post-buckling problems in \autoref{fig:inverse_design} and \autoref{fig:post_buckling}, respectively.
 
 ![Demonstration of *Flume* applied to topology optimization for inverse design with natural frequency applications. \label{fig:inverse_design}](Images/Inverse_Design_Sample.svg){width=100%}
