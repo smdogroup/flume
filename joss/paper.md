@@ -16,17 +16,22 @@ affiliations:
   - name: Georgia Institute of Technology, United States
     index: 1
     ror: 01zkghx44
-date: 24 October 2025
+date: 17 December 2025
 bibliography: paper.bib
 ---
 
 # Summary
 
-In an effort to solve a variety of multidisciplinary optimization (MDO) problems with gradient-based techniques, we have developed a tool to facilitate the system-level construction and execution for both the forward and reverse analyses.
+Engineering design problems often involve a sequence of coupled analyses that distribute information between one another.
+Derivative-based optimization methods can be used to numerically solve these design problems in a computationally efficient manner.
+The adjoint method enables the calculation of the derivatives required for gradient-based optimization and scales well with many design variables.
+To more effectively organize and solve these design problems, we have developed a framework to facilitate the system-level construction and execution for both the forward and reverse analyses.
 This framework, entitled _Flume_, is designed around systems that can be described by directed acyclic graphs (DAG).
-While this specific architecture prevents systems that have coupled relationships, it is applicable for a wide variety of problems, including topology and trajectory optimization.
-Following the DAG structure, each node represents an individual analysis that needs to be performed for the MDO problem, and the edges represent connections between analyses and denote the flow of information.
-To ensure that the framework is extensible, lightweight, and minimalist, three base classes have been implemented in Python to capture the necessary functionality: _State_, _Analysis_, and _System_.
+While this specific architecture excludes systems that have implicitly coupled relationships, it is applicable for a wide variety of problems, including topology and trajectory optimization.
+Following the DAG structure, each node represents an individual analysis that needs to be performed for the optimization problem, and the edges represent connections between analyses and denote the flow of information.
+By describing a design problem in this manner, the DAG structure can be constructed programmatically, motivating the development of a framework to address this task.
+
+To ensure that the framework is extensible, lightweight, and minimalistic, three base classes have been implemented in Python to capture the necessary functionality: _State_, _Analysis_, and _System_.
 The first class, _State_, simply provides an object that stores numerical data along with some additional metadata, including type, shape, and object source information.
 _Analysis_ is the foundation of Flume, and its primary task is to execute the forward and adjoint procedures to obtain the outputs and derivatives needed for optimization.
 Finally, _System_ provides a set of methods to declare the objective function, constraints, and design variables that will be used within the optimization problem, as well as a means to visualize the DAG.
@@ -44,25 +49,25 @@ Thus, the arrows that extend beyond the _System_ boundary are _States_ that defi
 # Statement of Need
 
 Numerical optimization is a field with a diverse range of applications, and, in engineering, is often used as a means of formulating problems in a formal, mathematical manner to identify optimal designs.
-The development of frameworks for organizing and solving these problems, which are often multidisciplinary in nature, is a topic that has been addressed by others in the past.
-Investigations of these frameworks has exposed a set of requirements for MDO frameworks, including modularity, intuitive user interfaces, object-oriented principles, and minimal overhead [@salas1998framework, @padula2006multidisciplinary].
-These attributes, among others, are critical components to ensuring that an MDO framework is extensible to a multitude of disciplines and accessible by a variety of individuals.
-While there are many MDO frameworks that have been developed since the late 20th century, a few are listed below to highlight the current state of the art.
+The development of frameworks for organizing and solving these problems is a topic that has been addressed by others in the past.
+Investigations of these frameworks has exposed a set of requirements for optimization frameworks, including modularity, intuitive user interfaces, object-oriented principles, and minimal overhead [@salas1998framework, @padula2006multidisciplinary].
+These attributes, among others, are critical components to ensuring that an optimization framework is extensible to a multitude of disciplines and accessible by a variety of individuals.
+While there are many design optimization frameworks that have been developed since the late 20th century, a few are listed below to highlight the current state of the art.
 
-- _ASTROS_: one of the first examples of MDO frameworks, _ASTROS_ performs preliminary structural design using numerical optimization based on the finite-element method [@astros]
+- _ASTROS_: one of the first examples of an optimization framework, _ASTROS_ performs preliminary structural design using numerical optimization based on the finite-element method [@astros]
 - _DAKOTA_: developed by Sandia National Laboratories, _DAKOTA_ is a software suite written in C++ that provides methods for a variety of analyses, including gradient-based and gradient-free optimization [@dakota]
 - _Isight_: a commercial tool by Dassault Systèmes that utilizes an object-oriented approach to connect a variety of simulation-based models [@isight]
 - _pyOptSparse_: an object-oriented solution written in Python, designed for solving constrained nonlinear optimization problems with sparsity that also supports parallelism [@Wu2020pyoptsparse]
 - _OpenMDAO_: another open-source framework constructed within Python that utilizes gradient-based techniques for optimization of systems constructed with distinct components [@gray2019openmdao]
 
 As evident from this list, users are presented with many viable options to perform numerical optimization for their system of interest.
-_Flume_ provides another resource for those solving MDO problems, but it was particularly architected to facilitate gradient-based design optimization with the adjoint method.
+_Flume_ provides another resource for those solving design optimization problems, but it was particularly architected to facilitate gradient-based design optimization with the adjoint method.
 For each _Analysis_ that a user wants to integrate into their model, they are responsible for providing the forward and adjoint analysis techniques that are specific to the computations they want to perform.
 The backend of _Flume_ will then orchestrate the assembly of total derivatives through the adjoint method by accumulating contributions from the objective function and any constraints for the system.
 Thus, each individual _Analysis_ must only consider its respective variable-output combinations, and the adjoint variables will propagate information through the model to compute the necessary total derivative information.
 This assists the user by allowing them to prioritize the development of the individual _Analysis_ objects, and the framework, paired with the proper _System_ construction, will address the data distribution for both computational directions.
 Since the core components of _Flume_ define the framework for the forward and adjoint analyses, it does not inherently perform the optimization.
-However, since numerical optimization is the ultimate objective, two interfaces are currently supported: SciPy [@2020-SciPy-NMeth] and ParOpt [@Chin2019paropt].
+However, since numerical optimization is the ultimate objective, two optimizer interfaces are currently supported with SciPy [@2020-SciPy-NMeth] and ParOpt [@Chin2019paropt].
 These interfaces provide the means of connecting a _System_ to an optimizer that will perform the numerical optimization.
 
 # Applications of _Flume_
@@ -95,7 +100,7 @@ Within _Flume_, this is implemented by constructing three distinct _Analysis_ ob
 As a demonstration, the code for the objective function _Analysis_ class is included below.
 Here, it is worth discussing a few key features regarding the structure of the code.
 
-- The `__init__` method is responsible for defining the default parameter and variable values for the class. This specifies the full set of inputs that are required to compute the outputs, where, generally, parameters are fixed inputs and variables will nominally change throughout the process of an optimization. The variables and parameters are dictionaries that are stored as attributes of the associated class, and the variable are wrapped within the _State_ class to contain value, derivative, and other metadata information.
+- The `__init__` method is responsible for defining the default parameter and variable values for the class. This specifies the full set of inputs that are required to compute the outputs, where, generally, parameters are fixed inputs and variables will nominally change throughout the process of an optimization. The variables and parameters are dictionaries that are stored as attributes of the associated class, and the variables are wrapped within the _State_ class to contain value, derivative, and other metadata information.
 - The `_analyze` method defines the forward analysis for evaluating the value of the Rosenbrock function. This utilizes the parameter and variable values stored within the class, and then the output value is assigned into an `outputs` dictionary. The line that sets `self.analyzed = True`, while small, is critically important for denoting the computations are concluded for the current _Analysis_ class.
 - The `_analyze_adjoint` method performs the adjoint analysis for the computations associated with the current class. Here, the variables are treated as independent, and the contributions from the adjoint variables associated with the output are accumulated into any previously computed derivatives for the variables. Similar to the `_analyze` method, it is necessary to have the line that performs the assignment for `self.adjoint_analyzed = True` to denote that the computations have concluded.
 
