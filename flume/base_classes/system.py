@@ -663,6 +663,76 @@ class System:
 
         return
 
+    def _compute_log_columns(self):
+        """
+        Computes column headers and widths for use in log_information. Each column
+        width is set to the maximum of the header label length (plus 2 for padding)
+        and 20 (to accommodate values formatted with %20.10e).
+
+        Returns
+        -------
+        columns : list of tuple
+            Each entry is (header_str, width, category, key, index) where category
+            is 'obj', 'con', or 'other', key is the dictionary key, and index is
+            the array index (or None for scalars).
+        """
+
+        columns = []
+
+        # Objective column
+        obj_header = f"obj: {self.obj_local_name}"
+        columns.append(("obj", None, None, obj_header))
+
+        # Constraint columns
+        for con in self.foi["cons"].keys():
+            con_val = (
+                self.foi["cons"][con]["instance"]
+                .outputs[self.foi["cons"][con]["local_name"]]
+                .value
+            )
+
+            if isinstance(con_val, np.ndarray):
+                for i in range(con_val.size):
+                    con_header = f"con: {self.foi['cons'][con]['local_name']}[{i}]"
+                    columns.append(("con", con, i, con_header))
+            else:
+                con_header = f"con: {self.foi['cons'][con]['local_name']}"
+                columns.append(("con", con, None, con_header))
+
+        # Other FOI columns
+        for other in self.foi["other"].keys():
+            other_val = (
+                self.foi["other"][other]["instance"]
+                .outputs[self.foi["other"][other]["local_name"]]
+                .value
+            )
+
+            if isinstance(other_val, np.ndarray):
+                for i in range(other_val.size):
+                    other_header = (
+                        f"other: {self.foi['other'][other]['local_name']}[{i}]"
+                    )
+                    columns.append(("other", other, i, other_header))
+            else:
+                other_header = f"other: {self.foi['other'][other]['local_name']}"
+                columns.append(("other", other, None, other_header))
+
+        # Compute widths: at least 20 (for numeric formatting), or header length + 2 for padding
+        col_info = []
+        for category, key, index, header in columns:
+            width = max(len(header) + 2, 20)
+            col_info.append(
+                {
+                    "category": category,
+                    "key": key,
+                    "index": index,
+                    "header": header,
+                    "width": width,
+                }
+            )
+
+        return col_info
+
     def log_information(self, iter_number):
         """
         Helper function that is used to log the values for the objective function, constraints, and other functions of interest at each iteration. Internally, this will update the log file for the System with this information at every iteration.
@@ -677,99 +747,58 @@ class System:
         if not hasattr(self, "foi"):
             self.declare_foi(global_foi_name=[])
 
+        # Compute column layout (recompute every header cycle in case FOI structure changes)
+        if iter_number % 10 == 0 or not hasattr(self, "_log_columns"):
+            self._log_columns = self._compute_log_columns()
+
         # Log the header names if the current iter number is divisible by 10
         if iter_number % 10 == 0:
-            # Log the header for the iter number and objective
-            obj_header = f"obj: {self.obj_local_name}"
-            self.outputs_log.log("\n%5s%20s" % ("iter", obj_header), end="")
+            self.outputs_log.log("\n%5s" % "iter", end="")
+            for col in self._log_columns:
+                fmt = f"%{col['width']}s"
+                self.outputs_log.log(fmt % col["header"], end="")
 
-            # Log the constraints
-            for con in self.foi["cons"].keys():
-                con_val = (
-                    self.foi["cons"][con]["instance"]
-                    .outputs[self.foi["cons"][con]["local_name"]]
+        # Log the values for the current iteration
+        self.outputs_log.log("\n%5d" % iter_number, end="")
+
+        for col in self._log_columns:
+            width = col["width"]
+            category = col["category"]
+            key = col["key"]
+            index = col["index"]
+
+            # Retrieve the value based on category
+            if category == "obj":
+                val = (
+                    self.foi["obj"]["instance"]
+                    .outputs[self.foi["obj"]["local_name"]]
                     .value
                 )
-
-                if isinstance(con_val, np.ndarray):
-                    for i in range(con_val.size):
-                        con_header = f"con: {self.foi['cons'][con]['local_name']}[{i}]"
-                        self.outputs_log.log("%20s" % con_header, end="")
-
-                else:
-                    con_header = f"con: {self.foi['cons'][con]['local_name']}"
-                    self.outputs_log.log("%20s" % con_header, end="")
-
-            # Log the other functions of interest
-            for other in self.foi["other"].keys():
-                other_val = (
-                    self.foi["other"][other]["instance"]
-                    .outputs[self.foi["other"][other]["local_name"]]
+            elif category == "con":
+                val = (
+                    self.foi["cons"][key]["instance"]
+                    .outputs[self.foi["cons"][key]["local_name"]]
                     .value
                 )
+                if isinstance(val, np.ndarray):
+                    val = val[index]
+            else:  # "other"
+                val = (
+                    self.foi["other"][key]["instance"]
+                    .outputs[self.foi["other"][key]["local_name"]]
+                    .value
+                )
+                if isinstance(val, np.ndarray):
+                    val = val[index]
 
-                if isinstance(other_val, np.ndarray):
-                    for i in range(other_val.size):
-                        other_header = (
-                            f"other: {self.foi['other'][other]['local_name']}[{i}]"
-                        )
-                        self.outputs_log.log("%20s" % other_header, end="")
-
-                else:
-                    other_header = f"other: {self.foi['other'][other]['local_name']}"
-                self.outputs_log.log("%20s" % other_header, end="")
-
-        # Log the values for the current iteration and objective value
-        obj_val = (
-            self.foi["obj"]["instance"].outputs[self.foi["obj"]["local_name"]].value
-        )
-
-        self.outputs_log.log("\n%5d%20.10e" % (iter_number, obj_val), end="")
-
-        # Log the values for the constraints at the current iter
-        for con in self.foi["cons"].keys():
-            con_val = (
-                self.foi["cons"][con]["instance"]
-                .outputs[self.foi["cons"][con]["local_name"]]
-                .value
-            )
-
-            if isinstance(con_val, np.ndarray):
-                for i in range(con_val.size):
-                    if not isinstance(con_val[i], str):
-                        con_val_i = "%20.10e" % con_val[i]
-                    self.outputs_log.log("%20s" % con_val_i, end="")
-
+            # Format the value
+            if not isinstance(val, str):
+                val_str = "%20.10e" % val
             else:
-                if not isinstance(con_val, str):
-                    con_val = "%20.10e" % con_val
+                val_str = val
 
-                self.outputs_log.log("%20s" % con_val, end="")
-
-        # Log the values for the other FOI
-        for other in self.foi["other"].keys():
-            other_val = (
-                self.foi["other"][other]["instance"]
-                .outputs[self.foi["other"][other]["local_name"]]
-                .value
-            )
-
-            if isinstance(other_val, np.ndarray):
-                for i in range(other_val.size):
-                    if not isinstance(other_val[i], str):
-                        other_val_i = "%20.10e" % other_val[i]
-                    self.outputs_log.log("%20s" % other_val_i, end="")
-
-            else:
-                if not isinstance(other_val, str):
-                    other_val = "%20.10e" % other_val
-
-                self.outputs_log.log("%20s" % other_val, end="")
-
-            # if not isinstance(other_val, str):
-            #     other_val = "%20.10e" % other_val
-
-            # self.outputs_log.log("%20s" % other_val, end="")
+            fmt = f"%{width}s"
+            self.outputs_log.log(fmt % val_str, end="")
 
         return
 
