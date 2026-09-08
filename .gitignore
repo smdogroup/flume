@@ -13,3 +13,4 @@ docs/_build/
 dist/*
 .vscode/
 tests/cantilever_beam*/
+**/*_out/
