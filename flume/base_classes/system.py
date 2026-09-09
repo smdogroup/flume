@@ -1018,7 +1018,7 @@ class System:
 
         # Using the provided objective name, store the associated analysis object and the local variable name
         self.global_obj_name = global_obj_name
-        obj_analysis_name, self.obj_local_name = global_obj_name.split(".")
+        obj_analysis_name, self.obj_local_name = global_obj_name.split(".", maxsplit=1)
 
         # Store the objective scale
         self.obj_scale = obj_scale
@@ -1063,7 +1063,7 @@ class System:
             self.con_info[key] = {}
 
             # Split the string
-            con_analysis_name, con_local_name = key.split(".")
+            con_analysis_name, con_local_name = key.split(".", maxsplit=1)
 
             # Find the analysis object for the current constraint
             con_analysis = self._find_analysis_object(
@@ -1116,7 +1116,7 @@ class System:
             self.design_vars_info[key] = {}
 
             # Split the string for the current variable
-            var_analysis_name, var_local_name = key.split(".")
+            var_analysis_name, var_local_name = key.split(".", maxsplit=1)
 
             # Find the analysis object instance for the current design variable
             var_analysis = self._find_analysis_object(var_analysis_name, var_local_name)
@@ -1181,7 +1181,7 @@ class System:
 
         for name in global_foi_name:
             # Split the name for the global foi
-            foi_analysis_name, foi_local_name = name.split(".")
+            foi_analysis_name, foi_local_name = name.split(".", maxsplit=1)
 
             # Find the analysis object associated with the global_foi_name
             foi_analysis = self._find_analysis_object(
