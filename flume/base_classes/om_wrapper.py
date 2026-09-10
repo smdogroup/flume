@@ -46,6 +46,10 @@ class OpenMDAOComponentAnalysis(Analysis):
         # Setup the variables dictionary for the Flume object (maps local Flume names to OpenMDAO model name)
         self.variables = {}
 
+        # Maps each local variable name to its native OpenMDAO shape, used to
+        # restore the flat Flume representation before setting values in OpenMDAO
+        self._var_shape = {}
+
         for var in om_inputs:
             # Get the variable name and variable info from the OpenMDAO Component
             var_name = var[0]
@@ -57,7 +61,18 @@ class OpenMDAOComponentAnalysis(Analysis):
             # Get the local variable name (split from global_name.local_name)
             local_name = var_name.split(".")[-1]
 
+            # Record the native OpenMDAO shape so the flat Flume representation can
+            # be restored to what OpenMDAO expects when the value is set in _analyze
+            # (e.g. a (1, 5) OpenMDAO variable is stored flat as (5,)).
+            self._var_shape[local_name] = np.shape(var_info["val"])
+
+            # Convert to Flume's native representation, flattening arrays to 1-D. The
+            # optimizer interfaces flatten every design variable into a 1-D vector, so
+            # the State must be scalar or 1-D to round-trip; otherwise a native (1, N)
+            # variable would reject the flat (N,) slice in Analysis.set_var_values.
             value = self._to_native(var_info["val"])
+            if isinstance(value, np.ndarray):
+                value = value.reshape(-1)
             desc = var_info["desc"]
 
             # Add the entry to the var map
@@ -129,8 +144,11 @@ class OpenMDAOComponentAnalysis(Analysis):
             # Get the name of the OpenMDAO variable
             om_name = self._var_map[var]
 
-            # Set the variable value in the OpenMDAO model
-            self.prob.set_val(name=om_name, val=var_val)
+            # Set the variable value in the OpenMDAO model, restoring the native
+            # OpenMDAO shape from Flume's flat representation
+            self.prob.set_val(
+                name=om_name, val=np.reshape(var_val, self._var_shape[var])
+            )
 
         # Execute run_model for the problem
         self.prob.run_model()
@@ -239,6 +257,10 @@ class OpenMDAOGroupAnalysis(Analysis):
         self._var_map = {}
         self.variables = {}
 
+        # Maps each local variable name to its native OpenMDAO shape, used to
+        # restore the flat Flume representation before setting values in OpenMDAO
+        self._var_shape = {}
+
         # Initialize the list that stores all OpenMDAO variable names
         self._om_var_names = []
 
@@ -259,8 +281,18 @@ class OpenMDAOGroupAnalysis(Analysis):
                 # Add the entry to the map between the local variable names and the OpenMDAO varaible name
                 self._var_map[local_name] = prom_var_name
 
-                # Get the value and description
+                # Record the native OpenMDAO shape so the flat Flume representation
+                # can be restored to what OpenMDAO expects when the value is set in
+                # _analyze (e.g. a (1, 5) variable is stored flat as (5,)).
+                self._var_shape[local_name] = np.shape(var_info["val"])
+
+                # Get the value and description, flattening arrays to 1-D so the DV
+                # round-trips through the optimizer interfaces' flat vector (a native
+                # (1, N) variable would otherwise reject the flat (N,) slice in
+                # Analysis.set_var_values).
                 value = self._to_native(var_info["val"])
+                if isinstance(value, np.ndarray):
+                    value = value.reshape(-1)
                 desc = var_info["desc"]
 
                 # Construct the State object
@@ -328,8 +360,11 @@ class OpenMDAOGroupAnalysis(Analysis):
             # Get the name of the OpenMDAO variable
             om_name = self._var_map[var]
 
-            # Set the variable value in the OpenMDAO model
-            self.prob.set_val(name=om_name, val=var_val)
+            # Set the variable value in the OpenMDAO model, restoring the native
+            # OpenMDAO shape from Flume's flat representation
+            self.prob.set_val(
+                name=om_name, val=np.reshape(var_val, self._var_shape[var])
+            )
 
         # Execute run_model for the problem
         self.prob.run_model()
@@ -349,6 +384,9 @@ class OpenMDAOGroupAnalysis(Analysis):
             # Construct the State object and assign it in the dictionary
             self.outputs[out] = State(value=out_val, desc=desc, source=self)
 
+        # Update the flag for the total derivative computation to reflect that the design point has changed
+        self.om_totals_computed = False
+
         return
 
     def _analyze_adjoint(self):
@@ -356,8 +394,14 @@ class OpenMDAOGroupAnalysis(Analysis):
         Private adjoint Analysis, which calls the compute_totals method to compute the total derivatives of each output wrt each input, and then accumulates across outputs for updating the variables' derivatives.
         """
 
-        # Execute the compute_totals method for the OpenMDAO model to compute the total derivatives through the Component
-        derivs = self.prob.compute_totals(of=self._om_out_names, wrt=self._om_var_names)
+        # Execute the compute_totals method for the OpenMDAO model to compute the total derivatives through the Component (if they have not been already computed for the current design point)
+        if not self.om_totals_computed:
+            self.derivs = self.prob.compute_totals(
+                of=self._om_out_names, wrt=self._om_var_names
+            )
+
+            # Update the flag to denote that the totals have been computed for the current design point
+            self.om_totals_computed = True
 
         # Loop through all outputs
         for out in self.outputs:
@@ -376,7 +420,7 @@ class OpenMDAOGroupAnalysis(Analysis):
                 # Get the partial derivative for the current (output, variable) combination
                 om_var_name = self._var_map[var]
 
-                dout_dvar = derivs[
+                dout_dvar = self.derivs[
                     (om_out_name, om_var_name)
                 ]  # Note this is a 2d Jacobian shaped (n_out, n_var)
 
