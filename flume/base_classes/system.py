@@ -230,7 +230,8 @@ class System:
                     self.dag_total_time += con_instance.forward_total
 
         else:
-            from concurrent.futures import ThreadPoolExecutor, as_completed
+            from concurrent.futures import ThreadPoolExecutor
+            import queue
 
             # Build the information that defines the DAG if it does not already exist
             if not hasattr(self, "dag_nodes"):
@@ -289,31 +290,36 @@ class System:
 
             # Construct the ThreadPoolExecutor and execute all of the Analyses in the System
             with ThreadPoolExecutor(max_workers=max_parallel_workers) as pool:
-                # Get the Future objects for the nodes that are ready to be evaluated (also starts the Analysis execution with the submit method)
-                futures = {
-                    pool.submit(perform_node_analysis, n): n for n in initial_ready
-                }
+                # Completed nodes are handed back to this scheduler thread via a thread-safe queue This makes the scheduling O(number_of_nodes) instead of O(number_of_nodes**2)
+                done_q = queue.Queue()
 
-                # Execute all Analysis objects until the entire DAG is complete
-                while futures:
-                    # Loop over the list of Future objects as they complete
-                    for future in as_completed(list(futures)):
-                        # Extract the node
-                        node = futures.pop(future)
+                def _submit(n):
+                    fut = pool.submit(perform_node_analysis, n)
+                    fut.add_done_callback(lambda f, node=n: done_q.put((node, f)))
 
-                        # Extract the data from the future (triggers the end of the perform_node_analysis)
-                        future.result()
+                # Every node in the DAG is executed exactly once
+                pending = len(nodes)
 
-                        # Loop through the dependents for the current node
-                        for dep in dependents[node]:
-                            # Decrement the counter for the dependent
-                            remaining[dep] -= 1
+                # Kick off the source nodes (those with no unmet dependencies)
+                for n in initial_ready:
+                    _submit(n)
 
-                            # Trigger the execution of the next Analysis object if all of its dependent nodes have finished executing
-                            if remaining[dep] == 0:
-                                futures[pool.submit(perform_node_analysis, dep)] = dep
+                # Drain completions one at a time; O(1) bookkeeping per completion
+                while pending:
+                    node, future = done_q.get()
 
-                        break
+                    # Extract the data from the future (triggers the end of the perform_node_analysis and propagates any worker exception)
+                    future.result()
+                    pending -= 1
+
+                    # Loop through the dependents for the current node
+                    for dep in dependents[node]:
+                        # Decrement the counter for the dependent
+                        remaining[dep] -= 1
+
+                        # Trigger the execution of the next Analysis object once all of its dependencies have finished executing
+                        if remaining[dep] == 0:
+                            _submit(dep)
 
             # Sum the per-node forward times for the DAG (only if tracking is on)
             if track:
@@ -472,7 +478,8 @@ class System:
             return
         # Parallel path for the adjoint analysis (parallelizes over the top-level Analysis objects and within each sweep)
         else:
-            from concurrent.futures import ThreadPoolExecutor, as_completed
+            from concurrent.futures import ThreadPoolExecutor
+            import queue
             from flume.base_classes.state import (
                 _current_sweep,
                 _current_writer,
@@ -571,48 +578,51 @@ class System:
 
             # Setup the scheduler, which is responsible for scheduling all adjoint analyses (in parallel over each quantity of interest, and parralel within a given sweep)
             with ThreadPoolExecutor(max_workers=self.parallel_max_workers) as pool:
-                futures = {}
+                # Completed (node, sweep) tasks are handed back to this scheduler thread via a thread-safe queue,
+                done_q = queue.Queue()
 
-                # Loop through all the sweeps
+                def _submit_adj(n, sweep_id):
+                    fut = pool.submit(perform_node_adjoint, n, sweep_id)
+                    fut.add_done_callback(
+                        lambda f, node=n, sid=sweep_id: done_q.put((node, sid, f))
+                    )
+
+                # Total number of (node, sweep) adjoint tasks; each runs exactly once
+                pending = sum(len(remaining_adj[sid]) for sid in remaining_adj)
+
+                # Kick off each sweep's roots (the sinks: objective and constraints)
                 for sweep_id, sink_object, _, _ in sinks_info:
                     # Loop through all nodes and values in the remaining adjoint dictionary
                     for n, r in remaining_adj[sweep_id].items():
-                        # Execute the perform_node_adjoint function if the number of remaining nodes is zero
+                        # Submit the perform_node_adjoint task if no dependents remain
                         if r == 0:
-                            futures[pool.submit(perform_node_adjoint, n, sweep_id)] = (
-                                n,
-                                sweep_id,
-                            )
+                            _submit_adj(n, sweep_id)
 
                 # Execute all adjoint analyses until all derivatives computed across the entire DAG for each quantity of interest
-                while futures:
-                    # Loop over the list of Future objects as they complete
-                    for fut in as_completed(list(futures)):
-                        # Extract the node and sweep ID
-                        n, sweep_id = futures.pop(fut)
+                while pending:
+                    # Extract the node and sweep ID of the next completed task
+                    n, sweep_id, fut = done_q.get()
 
-                        # Extract the data from the future (triggers the end of perform_node_adjoint)
-                        fut.result()
+                    # Extract the data from the future (triggers the end of perform_node_adjoint and propagates any worker exception)
+                    fut.result()
+                    pending -= 1
 
-                        # Get the ancestors for the current top-level Analysis object/sink
-                        anc = sink_ancestors[sinks_of_info[sweep_id]]
+                    # Get the ancestors for the current top-level Analysis object/sink
+                    anc = sink_ancestors[sinks_of_info[sweep_id]]
 
-                        # Loop through the sub-analyses for the current node
-                        for sub in n.sub_analyses:
-                            # Continue if the sub analysis is not in the ancestors list
-                            if sub not in anc:
-                                continue
+                    # Loop through the sub-analyses for the current node
+                    for sub in n.sub_analyses:
+                        # Continue if the sub analysis is not in the ancestors list
+                        if sub not in anc:
+                            continue
 
-                            # Decrement the counter for the adjoint tracker
-                            remaining_adj[sweep_id][sub] -= 1
+                        # Decrement the counter for the adjoint tracker
+                        remaining_adj[sweep_id][sub] -= 1
 
-                            # Trigger the execution of the node adjoint for the sub-analysis, if the remaining adjoint counter is zero
-                            if remaining_adj[sweep_id][sub] == 0:
-                                futures[
-                                    pool.submit(perform_node_adjoint, sub, sweep_id)
-                                ] = (sub, sweep_id)
-
-                        break
+                        # Trigger the adjoint for the sub-analysis once all of its
+                        # dependents in this sweep have completed
+                        if remaining_adj[sweep_id][sub] == 0:
+                            _submit_adj(sub, sweep_id)
 
             # Extract the design derivatives for each sweep. Before extracting, reduce each design-variable State's per-writer contribution buffers into its canonical slot so that _extract_dv_derivs returns the total accumulated gradient for that sweep
             for sweep_id, sink, _, _ in sinks_info:
